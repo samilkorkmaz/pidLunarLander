@@ -495,7 +495,7 @@
 
       <div class="setpoint-row">
         <label>Target altitude (m):</label>
-        <input type="number" id="setpointInput" value="10" min="0" max="900" step="5"
+        <input type="number" id="setpointInput" value="400" min="0" max="900" step="5"
           oninput="setpoint = parseFloat(this.value)||10">
       </div>
 
@@ -569,6 +569,26 @@
 
     <button class="btn primary" onclick="resetSim()">▶ LAUNCH / RESET</button>
     <button class="btn danger-btn" onclick="fuelDump()">⚡ FUEL DUMP (0%)</button>
+
+    <!-- Infinite fuel toggle -->
+    <div class="section" style="margin-top:0">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:0.72rem;color:var(--text)">∞ Infinite Fuel</span>
+        <label style="position:relative;display:inline-block;width:40px;height:20px;cursor:pointer">
+          <input type="checkbox" id="infiniteFuelChk" style="opacity:0;width:0;height:0"
+            onchange="infiniteFuel=this.checked;updateFuelUI()">
+          <span id="toggleTrack" style="
+            position:absolute;inset:0;border-radius:10px;
+            background:var(--border);transition:background 0.2s;
+          "></span>
+          <span id="toggleThumb" style="
+            position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;
+            background:var(--dim);transition:all 0.2s;
+          "></span>
+        </label>
+      </div>
+      <div class="tooltip" style="margin-top:4px">Removes fuel limit — useful for long PID experiments.</div>
+    </div>
 
   </div>
 
@@ -671,8 +691,9 @@ let gravity = 1.62;
 let maxThrust = 3.5;
 let initAlt = 500;
 let setpoint = 400;
+let infiniteFuel = false;
 
-let Kp = 3.0, Ki = 0.1, Kd = 10.0;
+let Kp = 1.0, Ki = 0.1, Kd = 2.0;
 let mode = 'manual';
 let manualThrust = 0;
 
@@ -712,7 +733,7 @@ function resetSim() {
   altitude = initAlt;
   velocity = 0;
   acceleration = 0;
-  fuel = 10.0;
+  fuel = 1.0;
   elapsedTime = 0;
   integralErr = 0; prevError = 0;
   pidPterm = 0; pidIterm = 0; pidDterm = 0; pidOutput = 0;
@@ -749,6 +770,20 @@ function setGrav(g) {
 }
 
 function fuelDump() { fuel = 0; }
+
+function updateFuelUI() {
+  const track = document.getElementById('toggleTrack');
+  const thumb = document.getElementById('toggleThumb');
+  if (infiniteFuel) {
+    track.style.background = 'var(--accent3)';
+    thumb.style.background = '#fff';
+    thumb.style.left = '23px';
+  } else {
+    track.style.background = 'var(--border)';
+    thumb.style.background = 'var(--dim)';
+    thumb.style.left = '3px';
+  }
+}
 
 /* ===================== PID ===================== */
 function computePID(dt) {
@@ -856,7 +891,7 @@ function physicsStep(elapsed) {
     thrustFrac = fuel > 0 ? computePID(elapsed) : 0;
   }
   currentThrust = thrustFrac;
-  fuel = Math.max(0, fuel - thrustFrac * 0.0015 * elapsed * 60);
+  if (!infiniteFuel) fuel = Math.max(0, fuel - thrustFrac * 0.0015 * elapsed * 60);
   const thrustAccel = thrustFrac * maxThrust;
   acceleration = thrustAccel - gravity; // upward positive
   velocity += acceleration * elapsed;
@@ -1114,9 +1149,9 @@ function updateHUD() {
   document.getElementById('hdrVel').textContent = velocity.toFixed(2) + ' m/s';
   document.getElementById('hdrVel').className = velClass;
   document.getElementById('hdrThrust').textContent = (currentThrust*100).toFixed(0) + '%';
-  document.getElementById('hdrFuel').textContent = (fuel*100).toFixed(1) + '%';
-  document.getElementById('hdrFuel').className = fuelClass;
-
+  document.getElementById('hdrFuel').textContent = infiniteFuel ? '∞' : (fuel*100).toFixed(1) + '%';
+  document.getElementById('hdrFuel').className = infiniteFuel ? 'ok' : fuelClass;
+  document.getElementById('telFuel').textContent = infiniteFuel ? '∞ (unlimited)' : (fuel*100).toFixed(1) + '%';
   // Manual thrust display
   if (mode === 'manual') {
     const pct = (manualThrust*100).toFixed(0);
@@ -1129,7 +1164,6 @@ function updateHUD() {
   document.getElementById('telAlt').textContent = altitude.toFixed(2) + ' m';
   document.getElementById('telVel').textContent = velocity.toFixed(3) + ' m/s';
   document.getElementById('telAcc').textContent = acceleration.toFixed(3) + ' m/s²';
-  document.getElementById('telFuel').textContent = (fuel*100).toFixed(1) + '%';
   document.getElementById('telTime').textContent = elapsedTime.toFixed(1) + ' s';
   document.getElementById('telGrav').textContent = gravity.toFixed(2) + ' m/s²';
 
