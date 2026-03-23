@@ -670,9 +670,9 @@
 let gravity = 1.62;
 let maxThrust = 3.5;
 let initAlt = 500;
-let setpoint = 10;
+let setpoint = 400;
 
-let Kp = 1.0, Ki = 0.1, Kd = 2.0;
+let Kp = 3.0, Ki = 0.1, Kd = 10.0;
 let mode = 'manual';
 let manualThrust = 0;
 
@@ -712,7 +712,7 @@ function resetSim() {
   altitude = initAlt;
   velocity = 0;
   acceleration = 0;
-  fuel = 1.0;
+  fuel = 10.0;
   elapsedTime = 0;
   integralErr = 0; prevError = 0;
   pidPterm = 0; pidIterm = 0; pidDterm = 0; pidOutput = 0;
