@@ -656,6 +656,17 @@
       <div class="pid-row"><label>Altitude = 0 m</label><value style="color:var(--dim)">touch ground</value></div>
     </div>
 
+    <!-- Data export -->
+    <div class="section">
+      <div class="section-title">Data Export</div>
+      <div class="tooltip" style="margin-bottom:8px">Tab-separated .txt with all recorded frames.</div>
+      <button class="btn" onclick="downloadLog()"
+        style="border-color:var(--warn);color:var(--warn);background:rgba(255,204,0,0.05)">
+        ⬇ Download Log (.txt)
+      </button>
+      <div id="logCount" style="font-size:0.6rem;color:var(--dim);text-align:center;margin-top:4px">0 frames recorded</div>
+    </div>
+
   </div>
 </div>
 
@@ -712,6 +723,9 @@ let crashed = false;
 const HIST = 300;
 let altHistory = [], velHistory = [], thrustHistory = [];
 
+// Data log (full resolution, every frame)
+let dataLog = [];
+
 /* ===================== CANVAS ===================== */
 const simCanvas = document.getElementById('sim');
 const simCtx = simCanvas.getContext('2d');
@@ -741,6 +755,7 @@ function resetSim() {
   integralErr = 0; prevError = 0;
   pidPterm = 0; pidIterm = 0; pidDterm = 0; pidOutput = 0;
   altHistory = []; velHistory = []; thrustHistory = [];
+  dataLog = [];
   landed = false; crashed = false;
   manualThrust = 0;
   document.getElementById('thrustSlider').value = 0;
@@ -1159,6 +1174,7 @@ function updateHUD() {
   document.getElementById('telAcc').textContent = acceleration.toFixed(3) + ' m/s²';
   document.getElementById('telTime').textContent = elapsedTime.toFixed(1) + ' s';
   document.getElementById('telGrav').textContent = gravity.toFixed(2) + ' m/s²';
+  document.getElementById('logCount').textContent = dataLog.length.toLocaleString() + ' frames recorded';
 
   // PID internals
   if (mode !== 'manual') {
@@ -1254,6 +1270,19 @@ function mainLoop(ts) {
     velHistory.push(velocity);
     thrustHistory.push(currentThrust);
     if (altHistory.length > HIST) { altHistory.shift(); velHistory.shift(); thrustHistory.shift(); }
+
+    // Data log (every frame, full resolution)
+    const logError = mode === 'manual' ? 0 : (setpoint - altitude);
+    dataLog.push([
+      elapsedTime.toFixed(4),
+      mode,
+      gravity.toFixed(4),
+      altitude.toFixed(4),
+      velocity.toFixed(4),
+      logError.toFixed(4),
+      (currentThrust * 100).toFixed(2),
+      (fuel * 100).toFixed(2)
+    ]);
   }
 
   if (simCanvas.width > 0) {
@@ -1263,6 +1292,24 @@ function mainLoop(ts) {
   }
 
   requestAnimationFrame(mainLoop);
+}
+
+/* ===================== DATA EXPORT ===================== */
+function downloadLog() {
+  if (dataLog.length === 0) {
+    alert('No data recorded yet. Start the simulation first.');
+    return;
+  }
+  const header = '%time(s)\tmode\tgravity(m/s2)\theight(m)\tspeed(m/s)\terror(m)\tthrust_command(%)\tfuel(%)';
+  const rows = dataLog.map(r => r.join('\t'));
+  const content = [header, ...rows].join('\n');
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `pid_lander_log_${new Date().toISOString().slice(0,19).replace(/[T:]/g,'-')}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* ===================== BOOT ===================== */
