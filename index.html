@@ -705,7 +705,7 @@ let gravity = 1.62;
 let maxThrust = 3.5;
 let initAlt = 500;
 let setpoint = 400;
-let infiniteFuel = false;
+let infiniteFuel = true;
 
 let Kp = 1.0, Ki = 0.1, Kd = 2.0;
 let mode = 'manual';
@@ -1316,6 +1316,9 @@ function downloadLog() {
 window.addEventListener('load', () => {
   resizeSim();
   resetSim();
+  // start with infinite fuel on
+  document.getElementById('infiniteFuelChk').checked = true;
+  updateFuelUI();
   requestAnimationFrame(mainLoop);
 });
 window.addEventListener('resize', resizeSim);
