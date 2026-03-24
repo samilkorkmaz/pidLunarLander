@@ -35,10 +35,12 @@
     overflow: hidden;
   }
 
+  /* STARFIELD */
   #stars {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
   }
 
+  /* HEADER */
   header {
     position: relative; z-index: 10;
     display: flex; align-items: center; justify-content: space-between;
@@ -77,6 +79,7 @@
   .stat value.warn { color: var(--warn); }
   .stat value.danger { color: var(--danger); }
 
+  /* MAIN LAYOUT */
   .main {
     position: relative; z-index: 10;
     display: flex; flex: 1; gap: 0;
@@ -84,6 +87,7 @@
     height: calc(100vh - 56px);
   }
 
+  /* LEFT PANEL */
   .left-panel {
     width: 260px; min-width: 260px;
     background: var(--panel);
@@ -94,6 +98,7 @@
     gap: 12px;
   }
 
+  /* RIGHT PANEL */
   .right-panel {
     width: 240px; min-width: 240px;
     background: var(--panel);
@@ -104,6 +109,7 @@
     gap: 12px;
   }
 
+  /* CANVAS AREA */
   .canvas-wrap {
     flex: 1;
     position: relative;
@@ -111,11 +117,12 @@
     background: radial-gradient(ellipse at 50% 110%, #0a1628 0%, var(--bg) 70%);
   }
 
-  canvas#sim {
+  canvas {
     display: block;
     width: 100%; height: 100%;
   }
 
+  /* PANEL SECTIONS */
   .section {
     background: var(--panel2);
     border: 1px solid var(--border);
@@ -134,6 +141,7 @@
     border-bottom: 1px solid var(--border);
   }
 
+  /* MODE BUTTONS */
   .mode-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
     margin-bottom: 8px;
@@ -161,6 +169,7 @@
   .mode-btn.manual.active { color: var(--accent2); border-color: var(--accent2); background: rgba(255,107,53,0.1); box-shadow: 0 0 10px rgba(255,107,53,0.2); }
   .mode-btn.bangbang.active { color: var(--warn); border-color: var(--warn); background: rgba(255,204,0,0.1); box-shadow: 0 0 10px rgba(255,204,0,0.2); }
 
+  /* SLIDERS */
   .slider-row {
     display: flex; flex-direction: column; gap: 3px;
     margin-bottom: 8px;
@@ -191,7 +200,10 @@
     box-shadow: 0 0 8px rgba(0,212,255,0.6);
     cursor: pointer;
   }
+  input[type=range].orange::-webkit-slider-thumb { background: var(--accent2); box-shadow: 0 0 8px rgba(255,107,53,0.6); }
+  input[type=range].green::-webkit-slider-thumb { background: var(--accent3); box-shadow: 0 0 8px rgba(57,255,20,0.6); }
 
+  /* THRUST CONTROL */
   .thrust-control {
     display: flex; flex-direction: column; align-items: center; gap: 8px;
   }
@@ -212,6 +224,12 @@
     border-radius: 50%;
     box-shadow: 0 0 12px rgba(255,107,53,0.8);
     cursor: pointer;
+  }
+  .thrust-label {
+    font-family: var(--display);
+    font-size: 0.65rem;
+    color: var(--dim);
+    letter-spacing: 0.15em;
   }
   .thrust-value {
     font-family: var(--display);
@@ -234,6 +252,7 @@
     box-shadow: 0 0 8px rgba(255,107,53,0.5);
   }
 
+  /* KEYBOARD HINT */
   .key-hint {
     display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
     margin-top: 4px;
@@ -248,6 +267,7 @@
   }
   .key strong { color: var(--text); }
 
+  /* PID DISPLAY */
   .pid-row {
     display: flex; justify-content: space-between; align-items: center;
     padding: 3px 0;
@@ -258,6 +278,17 @@
   .pid-row label { color: var(--dim); }
   .pid-row value { font-family: var(--display); font-size: 0.72rem; color: var(--accent3); }
 
+  /* LOG / CHART AREA */
+  .chart-canvas {
+    width: 100%;
+    height: 80px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    display: block;
+  }
+
+  /* BUTTONS */
   .btn {
     background: transparent;
     border: 1px solid var(--border);
@@ -283,14 +314,22 @@
     color: var(--danger);
     background: rgba(255,59,59,0.05);
   }
+  .btn.danger-btn:hover { background: rgba(255,59,59,0.15); }
 
-  .flash { position: absolute; inset: 0; pointer-events: none; z-index: 20; opacity: 0; }
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--panel); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* LANDING FLASH */
+  .flash { position: absolute; inset: 0; pointer-events: none; z-index: 20; opacity: 0; transition: opacity 0.3s; }
   .flash.show { opacity: 1; animation: flashAnim 0.6s ease-out forwards; }
   @keyframes flashAnim {
     0% { background: rgba(57,255,20,0.3); opacity: 1; }
     100% { background: transparent; opacity: 0; }
   }
 
+  /* CRASH FLASH */
   .crash-flash { position: absolute; inset: 0; pointer-events: none; z-index: 20; opacity: 0; }
   .crash-flash.show { animation: crashAnim 0.8s ease-out forwards; }
   @keyframes crashAnim {
@@ -298,6 +337,7 @@
     100% { background: transparent; opacity: 0; }
   }
 
+  /* OVERLAY */
   .overlay {
     position: absolute; inset: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -313,6 +353,7 @@
   }
   .overlay h2.success { color: var(--accent3); text-shadow: 0 0 30px rgba(57,255,20,0.5); }
   .overlay h2.fail { color: var(--danger); text-shadow: 0 0 30px rgba(255,59,59,0.5); }
+  .overlay p { font-size: 0.8rem; color: var(--dim); letter-spacing: 0.1em; }
   .overlay .restart-btn {
     background: var(--panel2); border: 1px solid var(--accent); color: var(--accent);
     font-family: var(--display); font-size: 0.75rem; letter-spacing: 0.2em;
@@ -320,10 +361,28 @@
     margin-top: 8px;
     transition: all 0.15s;
   }
+  .overlay .restart-btn:hover { background: rgba(0,212,255,0.1); box-shadow: 0 0 20px rgba(0,212,255,0.3); }
   .hidden { display: none !important; }
 
+  /* tooltip */
   .tooltip { font-size: 0.6rem; color: var(--dim); margin-top: 2px; line-height: 1.4; }
+
   .divider { border: none; border-top: 1px solid var(--border); margin: 2px 0; }
+
+  select {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 5px 8px;
+    border-radius: 3px;
+    width: 100%;
+    cursor: pointer;
+    outline: none;
+    margin-bottom: 6px;
+  }
+  select:focus { border-color: var(--accent); }
 
   .pid-formula {
     background: rgba(0,0,0,0.3);
@@ -342,6 +401,7 @@
   .setpoint-row {
     display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
   }
+  .setpoint-row label { font-size: 0.67rem; color: var(--dim); white-space: nowrap; }
   .setpoint-row input[type=number] {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -353,6 +413,10 @@
     width: 70px;
     outline: none;
   }
+
+  .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .legend-item { display: flex; align-items: center; gap: 4px; font-size: 0.6rem; color: var(--dim); }
+  .legend-dot { width: 8px; height: 3px; border-radius: 1px; }
 </style>
 </head>
 <body>
@@ -364,6 +428,22 @@
     <h1>🌙 LUNAR LANDER</h1>
     <div class="subtitle">PID Control Demonstration System</div>
   </div>
+  <a href="https://github.com/samilkorkmaz/pidLunarLander" target="_blank" rel="noopener"
+    style="display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--dim);font-size:0.68rem;letter-spacing:0.08em;border:1px solid var(--border);border-radius:3px;padding:5px 10px;transition:all 0.15s"
+    onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'"
+    onmouseout="this.style.color='var(--dim)';this.style.borderColor='var(--border)'">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+        0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+        -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+        .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+        -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27
+        .68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+        .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
+        0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+    </svg>
+    samilkorkmaz/pidLunarLander
+  </a>
   <div class="status-bar">
     <div class="stat">
       <label>Altitude</label>
@@ -390,7 +470,10 @@
 
 <div class="main">
 
+  <!-- LEFT PANEL -->
   <div class="left-panel">
+
+    <!-- Control Mode -->
     <div class="section">
       <div class="section-title">Control Mode</div>
       <div class="mode-grid">
@@ -403,10 +486,13 @@
       </div>
     </div>
 
+    <!-- Manual Thrust -->
     <div class="section" id="manualSection">
       <div class="section-title">Thrust Control</div>
       <div class="thrust-control">
-        <input type="range" id="thrustSlider" min="0" max="100" value="0" oninput="manualThrust = this.value/100">
+        <div class="thrust-label">THRUST OUTPUT</div>
+        <input type="range" id="thrustSlider" min="0" max="100" value="0"
+          oninput="manualThrust = this.value/100">
         <div class="thrust-value"><span id="thrustPct">0</span>%</div>
       </div>
       <div class="thrust-bar-wrap"><div class="thrust-bar" id="thrustBar" style="width:0%"></div></div>
@@ -417,47 +503,113 @@
       </div>
     </div>
 
+    <!-- PID Settings -->
     <div class="section" id="pidSection" style="display:none">
       <div class="section-title">PID Parameters</div>
-      <div class="pid-formula">u(t) = <span class="hl">Kp·e</span> + <span class="hl3">Ki·∫e dt</span> + <span class="hl2">Kd·ė</span></div>
+
+      <div class="pid-formula">
+        u(t) = <span class="hl">Kp·e</span> + <span class="hl3">Ki·∫e dt</span> + <span class="hl2">Kd·ė</span>
+      </div>
+
       <div class="setpoint-row">
         <label>Target altitude (m):</label>
-        <input type="number" id="setpointInput" value="400" min="0" max="900" step="5" oninput="setpoint = parseFloat(this.value)||10">
+        <input type="number" id="setpointInput" value="400" min="0" max="900" step="5"
+          oninput="setpoint = parseFloat(this.value)||10">
       </div>
+
       <div class="slider-row" id="kpRow">
-        <div class="slider-label"><span>Kp — Proportional</span><value id="kpVal">1.00</value></div>
-        <input type="range" min="0" max="5" step="0.05" value="1.0" id="kpSlider" oninput="Kp=parseFloat(this.value);document.getElementById('kpVal').textContent=Kp.toFixed(2)">
+        <div class="slider-label">
+          <span>Kp — Proportional</span>
+          <value id="kpVal">1.00</value>
+        </div>
+        <input type="range" min="0" max="5" step="0.05" value="1.0" id="kpSlider"
+          oninput="Kp=parseFloat(this.value);document.getElementById('kpVal').textContent=Kp.toFixed(2)">
+        <div class="tooltip">Reacts to current error. Higher → faster response, may oscillate.</div>
       </div>
+
       <div class="slider-row" id="kiRow" style="display:none">
-        <div class="slider-label"><span>Ki — Integral</span><value id="kiVal">0.10</value></div>
-        <input type="range" min="0" max="1" step="0.005" value="0.1" id="kiSlider" oninput="Ki=parseFloat(this.value);document.getElementById('kiVal').textContent=Ki.toFixed(3)">
+        <div class="slider-label">
+          <span>Ki — Integral</span>
+          <value id="kiVal">0.10</value>
+        </div>
+        <input type="range" class="green" min="0" max="1" step="0.005" value="0.1" id="kiSlider"
+          oninput="Ki=parseFloat(this.value);document.getElementById('kiVal').textContent=Ki.toFixed(3)">
+        <div class="tooltip">Corrects steady-state error. Higher → eliminates bias, can wind up.</div>
       </div>
+
       <div class="slider-row" id="kdRow" style="display:none">
-        <div class="slider-label"><span>Kd — Derivative</span><value id="kdVal">2.00</value></div>
-        <input type="range" min="0" max="10" step="0.1" value="2.0" id="kdSlider" oninput="Kd=parseFloat(this.value);document.getElementById('kdVal').textContent=Kd.toFixed(2)">
+        <div class="slider-label">
+          <span>Kd — Derivative</span>
+          <value id="kdVal">2.00</value>
+        </div>
+        <input type="range" class="orange" min="0" max="10" step="0.1" value="2.0" id="kdSlider"
+          oninput="Kd=parseFloat(this.value);document.getElementById('kdVal').textContent=Kd.toFixed(2)">
+        <div class="tooltip">Damps oscillation. Higher → smoother, can be sluggish.</div>
       </div>
     </div>
 
+    <!-- Bang-Bang Info -->
     <div class="section" id="bangbangSection" style="display:none">
       <div class="section-title">Bang-Bang Strategy</div>
       <div class="pid-formula" style="line-height:2">
-        Phase 1: <span class="hl2">Thrust = 0</span> (fall)<br>
-        Phase 2: <span class="hl">Thrust = 100%</span> (brake)<br>
-        Switch at: <span class="hl3" id="bbSwitchAlt">—</span> m
+        Phase 1: <span class="hl2">Thrust = 0</span> (free-fall)<br>
+        Phase 2: <span class="hl">Thrust = 100%</span> (full brake)<br>
+        Switch when alt ≤ <span class="hl3" id="bbSwitchAlt">—</span> m
       </div>
+      <div class="pid-row"><label>Net brake accel</label><value id="bbNetAccel">—</value></div>
+      <div class="pid-row"><label>Switch altitude</label><value id="bbSwitchAlt2" style="color:var(--warn)">—</value></div>
+      <div class="pid-row"><label>Phase</label><value id="bbPhase" style="color:var(--accent2)">FREEFALL</value></div>
+      <div class="tooltip" style="margin-top:4px">Pontryagin's Minimum Principle: always thrust at 0% or 100%. Switch point computed from current velocity each frame.</div>
     </div>
 
+    <!-- Physics -->
     <div class="section">
       <div class="section-title">Environment</div>
       <div class="slider-row">
-        <div class="slider-label"><span>Gravity (m/s²)</span><value id="gravVal">1.62</value></div>
-        <input type="range" min="0.1" max="20" step="0.1" value="1.62" id="gravSlider" oninput="gravity=parseFloat(this.value);document.getElementById('gravVal').textContent=gravity.toFixed(2)">
+        <div class="slider-label">
+          <span>Gravity (m/s²)</span>
+          <value id="gravVal">1.62</value>
+        </div>
+        <input type="range" min="0.1" max="20" step="0.1" value="1.62" id="gravSlider"
+          oninput="gravity=parseFloat(this.value);document.getElementById('gravVal').textContent=gravity.toFixed(2)">
+        <div class="tooltip">🌙 Moon=1.62 · 🌍 Earth=9.81 · 🔴 Mars=3.72</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px">
+        <button class="btn" style="margin:0;padding:5px 8px;font-size:0.62rem" onclick="setGrav(1.62)">Moon</button>
+        <button class="btn" style="margin:0;padding:5px 8px;font-size:0.62rem" onclick="setGrav(9.81)">Earth</button>
+      </div>
+      <hr class="divider" style="margin-top:8px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 0;user-select:none">
+        <input type="checkbox" id="infiniteFuelChk"
+          onchange="infiniteFuel=this.checked;updateFuelUI()"
+          style="width:16px;height:16px;accent-color:var(--accent3);cursor:pointer">
+        <span style="font-size:0.72rem;color:var(--text)">∞ Infinite Fuel</span>
+        <span id="infiniteFuelBadge" style="display:none;font-size:0.6rem;background:rgba(57,255,20,0.15);color:var(--accent3);border:1px solid var(--accent3);border-radius:3px;padding:1px 5px">ON</span>
+      </label>
+      <div class="slider-row" style="margin-top:6px">
+        <div class="slider-label">
+          <span>Max Thrust (N/kg)</span>
+          <value id="maxThrustVal">11</value>
+        </div>
+        <input type="range" min="1" max="30" step="0.1" value="3.5" id="maxThrustSlider"
+          oninput="maxThrust=parseFloat(this.value);document.getElementById('maxThrustVal').textContent=maxThrust.toFixed(2)">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label">
+          <span>Initial Altitude (m)</span>
+          <value id="initAltVal">500</value>
+        </div>
+        <input type="range" min="100" max="900" step="10" value="500" id="initAltSlider"
+          oninput="initAlt=parseFloat(this.value);document.getElementById('initAltVal').textContent=initAlt.toFixed(0)">
       </div>
     </div>
 
     <button class="btn primary" onclick="resetSim()">▶ LAUNCH / RESET</button>
+    <button class="btn danger-btn" onclick="fuelDump()">⚡ FUEL DUMP (0%)</button>
+
   </div>
 
+  <!-- CANVAS -->
   <div class="canvas-wrap" id="canvasWrap">
     <canvas id="sim"></canvas>
     <div class="flash" id="flash"></div>
@@ -465,22 +617,33 @@
     <div class="overlay hidden" id="overlay">
       <h2 id="overlayTitle" class="success">LANDED</h2>
       <p id="overlayMsg">Safe landing achieved</p>
-      <button class="restart-btn" onclick="resetSim()">[ RESTART ]</button>
+      <button class="restart-btn" onclick="resetSim()">[ RESTART MISSION ]</button>
     </div>
   </div>
 
+  <!-- RIGHT PANEL -->
   <div class="right-panel">
+
+    <!-- Live PID Internals -->
     <div class="section" id="pidLiveSection">
-      <div class="section-title">Live PID Internals</div>
+      <div class="section-title">PID Internals</div>
       <div class="pid-row"><label>Error e(t)</label><value id="liveError">—</value></div>
       <div class="pid-row"><label>P term</label><value id="livePterm" style="color:var(--accent)">—</value></div>
       <div class="pid-row"><label>I term</label><value id="liveIterm" style="color:var(--accent3)">—</value></div>
       <div class="pid-row"><label>D term</label><value id="liveDterm" style="color:var(--accent2)">—</value></div>
       <div class="pid-row"><label>Output u(t)</label><value id="liveOutput">—</value></div>
+      <div class="pid-row"><label>Clamped</label><value id="liveClamped">—</value></div>
     </div>
 
+    <!-- Thrust chart -->
     <div class="section">
-      <div class="section-title">Live Telemetry</div>
+      <div class="section-title">Thrust History</div>
+      <canvas class="chart-canvas" id="thrustChart"></canvas>
+    </div>
+
+    <!-- Telemetry numbers -->
+    <div class="section">
+      <div class="section-title">Telemetry</div>
       <div class="pid-row"><label>Altitude</label><value id="telAlt">—</value></div>
       <div class="pid-row"><label>Velocity</label><value id="telVel">—</value></div>
       <div class="pid-row"><label>Acceleration</label><value id="telAcc">—</value></div>
@@ -488,158 +651,639 @@
       <div class="pid-row"><label>Time</label><value id="telTime">—</value></div>
     </div>
 
+    <!-- Landing guide -->
     <div class="section">
-      <div class="section-title">Safety Limits</div>
-      <div class="pid-row"><label>Impact Velocity</label><value style="color:var(--accent3)">≤ 5 m/s</value></div>
+      <div class="section-title">Safe Landing Criteria</div>
+      <div class="pid-row"><label>Impact velocity</label><value id="safeCrit" style="color:var(--accent3)">≤ 5 m/s</value></div>
+      <div class="pid-row"><label>Altitude</label><value style="color:var(--dim)">≤ 5 m</value></div>
     </div>
 
+    <!-- Data export -->
     <div class="section">
-      <div class="section-title">Data Log</div>
-      <button class="btn" onclick="downloadLog()" style="border-color:var(--warn);color:var(--warn)">⬇ Download Log</button>
+      <div class="section-title">Data Export</div>
+      <button class="btn" onclick="downloadLog()"
+        style="border-color:var(--warn);color:var(--warn);background:rgba(255,204,0,0.05)">
+        ⬇ Download Log (.txt)
+      </button>
       <div id="logCount" style="font-size:0.6rem;color:var(--dim);text-align:center;margin-top:4px">0 frames recorded</div>
     </div>
+
   </div>
 </div>
 
 <script>
-// Logic remains unchanged, only UI references to charts removed to prevent errors.
+/* ===================== STARFIELD ===================== */
 (function() {
   const c = document.getElementById('stars');
   const ctx = c.getContext('2d');
   let stars = [];
   function resize() {
-    c.width = window.innerWidth; c.height = window.innerHeight;
-    stars = Array.from({length:200}, () => ({x:Math.random()*c.width, y:Math.random()*c.height, r:Math.random()*1.5, a:Math.random()}));
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+    stars = Array.from({length:200}, () => ({
+      x: Math.random()*c.width,
+      y: Math.random()*c.height,
+      r: Math.random()*1.5,
+      a: Math.random()
+    }));
+    draw();
   }
   function draw() {
     ctx.clearRect(0,0,c.width,c.height);
-    stars.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fillStyle = `rgba(200,224,255,${s.a})`; ctx.fill(); });
+    stars.forEach(s => {
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(200,224,255,${s.a})`;
+      ctx.fill();
+    });
   }
-  window.addEventListener('resize', resize); resize();
-  function anim() { draw(); requestAnimationFrame(anim); } anim();
+  window.addEventListener('resize', resize);
+  resize();
 })();
 
-let gravity = 1.62, maxThrust = 3.5, initAlt = 500, setpoint = 400, infiniteFuel = true;
-let Kp = 1.0, Ki = 0.1, Kd = 2.0, mode = 'manual', manualThrust = 0;
-let altitude, velocity, acceleration, fuel, elapsedTime, integralErr = 0, prevError = 0;
+/* ===================== SIM STATE ===================== */
+let gravity = 1.62;
+let maxThrust = 3.5;
+let initAlt = 500;
+let setpoint = 400;
+let infiniteFuel = true;
+
+let Kp = 1.0, Ki = 0.1, Kd = 2.0;
+let mode = 'manual';
+let manualThrust = 0;
+
+// Simulation state
+let altitude, velocity, acceleration, fuel, elapsedTime;
+let integralErr = 0, prevError = 0;
 let pidPterm = 0, pidIterm = 0, pidDterm = 0, pidOutput = 0;
-let running = false, landed = false, crashed = false;
+let running = false;
+let landed = false;
+let crashed = false;
+
+// History buffers
+const HIST = 300;
+let altHistory = [], velHistory = [], thrustHistory = [];
+
+// Data log (full resolution, every frame)
 let dataLog = [];
 
+/* ===================== CANVAS ===================== */
 const simCanvas = document.getElementById('sim');
 const simCtx = simCanvas.getContext('2d');
+const thrustChartCanvas = document.getElementById('thrustChart');
+const thrustCtx = thrustChartCanvas.getContext('2d');
 
 function resizeSim() {
   const wrap = document.getElementById('canvasWrap');
-  simCanvas.width = wrap.clientWidth; simCanvas.height = wrap.clientHeight;
+  simCanvas.width = wrap.clientWidth;
+  simCanvas.height = wrap.clientHeight;
+  thrustChartCanvas.width = thrustChartCanvas.offsetWidth;
+  thrustChartCanvas.height = thrustChartCanvas.offsetHeight;
 }
+window.addEventListener('resize', resizeSim);
 
+/* ===================== INIT ===================== */
 function resetSim() {
-  altitude = initAlt; velocity = 0; acceleration = 0; fuel = 1.0; elapsedTime = 0;
-  integralErr = 0; prevError = 0; dataLog = []; landed = false; crashed = false; manualThrust = 0;
+  altitude = initAlt;
+  velocity = 0;
+  acceleration = 0;
+  fuel = 1.0;
+  elapsedTime = 0;
+  integralErr = 0; prevError = 0;
+  pidPterm = 0; pidIterm = 0; pidDterm = 0; pidOutput = 0;
+  altHistory = []; velHistory = []; thrustHistory = [];
+  dataLog = [];
+  landed = false; crashed = false;
+  manualThrust = 0;
+  document.getElementById('thrustSlider').value = 0;
   document.getElementById('overlay').classList.add('hidden');
   running = true;
 }
 
+/* ===================== MODE ===================== */
 function setMode(m) {
   mode = m;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('btn-'+m.toLowerCase()).classList.add('active');
   document.getElementById('hdrMode').textContent = m.toUpperCase();
-  document.getElementById('manualSection').style.display = m === 'manual' ? '' : 'none';
-  document.getElementById('pidSection').style.display = (!['manual', 'bangbang'].includes(m)) ? '' : 'none';
-  document.getElementById('bangbangSection').style.display = m === 'bangbang' ? '' : 'none';
-  if (document.getElementById('kiRow')) document.getElementById('kiRow').style.display = (m === 'PI' || m === 'PID') ? '' : 'none';
-  if (document.getElementById('kdRow')) document.getElementById('kdRow').style.display = (m === 'PD' || m === 'PID') ? '' : 'none';
+  document.getElementById('hdrMode').style.color =
+    m === 'manual' ? 'var(--accent2)' : m === 'bangbang' ? 'var(--warn)' : 'var(--accent)';
+
+  const isManual = m === 'manual';
+  const isBangBang = m === 'bangbang';
+  const isPID = !isManual && !isBangBang;
+  document.getElementById('manualSection').style.display = isManual ? '' : 'none';
+  document.getElementById('pidSection').style.display = isPID ? '' : 'none';
+  document.getElementById('bangbangSection').style.display = isBangBang ? '' : 'none';
+
+  // Show/hide param rows
+  document.getElementById('kiRow').style.display = (m === 'PI' || m === 'PID') ? '' : 'none';
+  document.getElementById('kdRow').style.display = (m === 'PD' || m === 'PID') ? '' : 'none';
 }
 
+function setGrav(g) {
+  gravity = g;
+  document.getElementById('gravSlider').value = g;
+  document.getElementById('gravVal').textContent = g.toFixed(2);
+}
+
+function fuelDump() { fuel = 0; }
+
+function updateFuelUI() {
+  document.getElementById('infiniteFuelBadge').style.display = infiniteFuel ? 'inline' : 'none';
+}
+
+/* ===================== PID ===================== */
 function computePID(dt) {
   const error = setpoint - altitude;
-  integralErr = Math.max(-500, Math.min(500, integralErr + error * dt));
+  integralErr += error * dt;
+  // anti-windup clamp
+  integralErr = Math.max(-500, Math.min(500, integralErr));
   const derivative = (error - prevError) / dt;
   prevError = error;
-  pidPterm = ['P','PD','PI','PID'].includes(mode) ? Kp * error : 0;
-  pidIterm = ['PI','PID'].includes(mode) ? Ki * integralErr : 0;
-  pidDterm = ['PD','PID'].includes(mode) ? Kd * derivative : 0;
+
+  const useP = (mode === 'P' || mode === 'PD' || mode === 'PI' || mode === 'PID');
+  const useI = (mode === 'PI' || mode === 'PID');
+  const useD = (mode === 'PD' || mode === 'PID');
+
+  pidPterm = useP ? Kp * error : 0;
+  pidIterm = useI ? Ki * integralErr : 0;
+  pidDterm = useD ? Kd * derivative : 0;
   pidOutput = pidPterm + pidIterm + pidDterm;
-  return Math.max(0, Math.min(1, (gravity / maxThrust) + pidOutput / maxThrust));
-}
 
-function computeBangBang() {
-  const netBrake = maxThrust - gravity;
-  if (netBrake <= 0) return 0;
-  const switchAlt = 5 + (velocity * velocity) / (2 * netBrake) + 2;
-  document.getElementById('bbSwitchAlt').textContent = switchAlt.toFixed(1);
-  return altitude <= switchAlt ? 1.0 : 0.0;
-}
-
-function physicsStep(dt) {
-  let thrustFrac = 0;
-  if (mode === 'manual') thrustFrac = manualThrust;
-  else if (mode === 'bangbang') thrustFrac = computeBangBang();
-  else thrustFrac = computePID(dt);
-  
-  acceleration = (thrustFrac * maxThrust) - gravity;
-  velocity += acceleration * dt;
-  altitude += velocity * dt;
+  // Map PID output to thrust [0,1]
+  // We need thrust = gravity/maxThrust + correction to hover
+  // gravity/maxThrust gives the thrust fraction to hover
+  const hoverFrac = gravity / maxThrust;
+  let thrustFrac = hoverFrac + pidOutput / maxThrust;
+  thrustFrac = Math.max(0, Math.min(1, thrustFrac));
   return thrustFrac;
 }
 
-function draw() {
-  const W = simCanvas.width, H = simCanvas.height, ctx = simCtx;
-  ctx.clearRect(0,0,W,H);
-  const groundY = H - 60;
-  ctx.fillStyle = '#1a3a6a'; ctx.fillRect(0, groundY, W, H-groundY);
-  ctx.strokeStyle = '#00d4ff'; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(W, groundY); ctx.stroke();
-  
-  const landerY = groundY - (altitude/900)*(groundY-40) - 18;
-  ctx.fillStyle = '#0d1f3c'; ctx.strokeStyle = '#00d4ff';
-  ctx.beginPath(); ctx.roundRect(W/2-18, landerY-20, 36, 32, 4); ctx.fill(); ctx.stroke();
+/* ===================== BANG-BANG ===================== */
+// Landing target: altitude = 5m, impact speed ≤ 5 m/s
+const BB_TARGET_ALT  = 5;
+const BB_MAX_IMPACT  = 5;   // m/s — displayed constraint
+const BB_AIM_IMPACT  = 3.5; // m/s — internal aim point (safety margin for discrete timestep)
+const BB_SAFETY_M    = 2.0; // m   — extra altitude margin on switch point
+
+function computeBangBang() {
+  const netBrakeAccel = maxThrust - gravity; // upward decel when full thrust
+  if (netBrakeAccel <= 0) return 0; // can't brake — thrust too weak
+
+  // Current downward speed (positive = falling)
+  const downSpeed = -velocity; // velocity is upward-positive
+
+  // Braking distance needed to reduce downSpeed to aim impact speed
+  // v² - u² = 2·a·d  →  d = (downSpeed² - aimSpeed²) / (2·netBrakeAccel)
+  const aimSpeed = Math.min(BB_AIM_IMPACT, BB_MAX_IMPACT);
+  const brakingDist = Math.max(0,
+    (downSpeed * downSpeed - aimSpeed * aimSpeed) / (2 * netBrakeAccel)
+  );
+  const switchAlt = BB_TARGET_ALT + brakingDist + BB_SAFETY_M;
+
+  // Update info panel
+  document.getElementById('bbNetAccel').textContent = netBrakeAccel.toFixed(3) + ' m/s²';
+  document.getElementById('bbSwitchAlt').textContent  = switchAlt.toFixed(1);
+  document.getElementById('bbSwitchAlt2').textContent = switchAlt.toFixed(1) + ' m';
+
+  if (altitude <= switchAlt) {
+    // Braking phase — full thrust
+    document.getElementById('bbPhase').textContent = 'BRAKING';
+    document.getElementById('bbPhase').style.color = 'var(--accent)';
+    return 1.0;
+  } else {
+    // Freefall phase — zero thrust
+    document.getElementById('bbPhase').textContent = 'FREEFALL';
+    document.getElementById('bbPhase').style.color = 'var(--accent2)';
+    return 0.0;
+  }
 }
 
-function updateHUD(thrust) {
+/* ===================== PHYSICS ===================== */
+const fuelConsumptionRate = 0.0015;
+let currentThrust = 0;
+
+function physicsStep(elapsed) {
+  let thrustFrac;
+  if (mode === 'manual') {
+    thrustFrac = fuel > 0 ? manualThrust : 0;
+  } else if (mode === 'bangbang') {
+    thrustFrac = fuel > 0 ? computeBangBang() : 0;
+  } else {
+    thrustFrac = fuel > 0 ? computePID(elapsed) : 0;
+  }
+  currentThrust = thrustFrac;
+  if (!infiniteFuel) fuel = Math.max(0, fuel - thrustFrac * fuelConsumptionRate * elapsed * 60);
+  const thrustAccel = thrustFrac * maxThrust;
+  acceleration = thrustAccel - gravity; // upward positive
+  velocity += acceleration * elapsed;
+  altitude += velocity * elapsed; // altitude increases upward
+  if (altitude > 1200) { altitude = 1200; velocity = Math.min(velocity, 0); }
+}
+
+/* ===================== DRAW ===================== */
+function draw() {
+  const W = simCanvas.width, H = simCanvas.height;
+  const ctx = simCtx;
+  ctx.clearRect(0, 0, W, H);
+
+  // Ground
+  const groundY = H - 60;
+  const gradient = ctx.createLinearGradient(0, groundY, 0, H);
+  gradient.addColorStop(0, '#1a3a6a');
+  gradient.addColorStop(1, '#050a14');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, groundY, W, H - groundY);
+
+  // Ground line with glow
+  ctx.strokeStyle = '#00d4ff';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#00d4ff';
+  ctx.shadowBlur = 10;
+  ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(W, groundY); ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Landing pad
+  const padW = 100, padX = W/2 - padW/2;
+  ctx.fillStyle = 'rgba(0,212,255,0.15)';
+  ctx.fillRect(padX, groundY - 4, padW, 4);
+  ctx.strokeStyle = '#00d4ff';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([6,4]);
+  ctx.strokeRect(padX, groundY - 4, padW, 4);
+  ctx.setLineDash([]);
+
+  // Setpoint line (auto modes)
+  if (mode !== 'manual' && mode !== 'bangbang') {
+    const spY = altToY(setpoint, H, groundY);
+    ctx.strokeStyle = 'rgba(255,204,0,0.5)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([8,6]);
+    ctx.beginPath(); ctx.moveTo(0, spY); ctx.lineTo(W, spY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,204,0,0.7)';
+    ctx.font = '11px Share Tech Mono';
+    ctx.fillText(`TARGET: ${setpoint}m`, 8, spY - 4);
+  }
+
+  // Bang-bang switch altitude line
+  if (mode === 'bangbang') {
+    const netBrakeAccel = maxThrust - gravity;
+    if (netBrakeAccel > 0) {
+      const downSpeed = -velocity;
+      const brakingDist = Math.max(0,
+        (downSpeed * downSpeed - BB_AIM_IMPACT * BB_AIM_IMPACT) / (2 * netBrakeAccel)
+      );
+      const switchAlt = BB_TARGET_ALT + brakingDist + BB_SAFETY_M;
+      const swY = altToY(switchAlt, H, groundY);
+      ctx.strokeStyle = 'rgba(255,204,0,0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6,4]);
+      ctx.beginPath(); ctx.moveTo(0, swY); ctx.lineTo(W, swY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(255,204,0,0.85)';
+      ctx.font = '11px Share Tech Mono';
+      ctx.fillText(`SWITCH: ${switchAlt.toFixed(1)}m`, 8, swY - 4);
+    }
+  }
+
+  // Lander — offset upward by 18px so feet (local y=18) sit on the ground
+  const FEET_OFFSET = 18;
+  const landerX = W / 2;
+  const landerY = altToY(altitude, H, groundY) - FEET_OFFSET;
+  drawLander(ctx, landerX, landerY, currentThrust);
+
+  // Altitude ruler
+  drawRuler(ctx, W, H, groundY);
+
+  // Velocity vector arrow
+  if (Math.abs(velocity) > 0.5) {
+    const vScale = 8;
+    const arrowLen = Math.min(Math.abs(velocity) * vScale, 60);
+    const dir = velocity > 0 ? -1 : 1;
+    ctx.strokeStyle = velocity > 0 ? '#39ff14' : '#ff6b35';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = velocity > 0 ? '#39ff14' : '#ff6b35';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.moveTo(landerX + 30, landerY);
+    ctx.lineTo(landerX + 30, landerY + dir * arrowLen);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(landerX + 30, landerY + dir * arrowLen);
+    ctx.lineTo(landerX + 25, landerY + dir * (arrowLen - 10));
+    ctx.lineTo(landerX + 35, landerY + dir * (arrowLen - 10));
+    ctx.closePath();
+    ctx.fillStyle = velocity > 0 ? '#39ff14' : '#ff6b35';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+}
+
+function altToY(alt, H, groundY) {
+  const maxAlt = 900;
+  return groundY - (alt / maxAlt) * (groundY - 40);
+}
+
+function drawLander(ctx, x, y, thrustFrac) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Thrust flame
+  if (thrustFrac > 0.01) {
+    const flameH = 20 + thrustFrac * 40 + Math.random() * 10;
+    const flameGrad = ctx.createLinearGradient(0, 0, 0, flameH);
+    flameGrad.addColorStop(0, `rgba(255,150,50,${0.9 * thrustFrac})`);
+    flameGrad.addColorStop(0.5, `rgba(255,80,20,${0.6 * thrustFrac})`);
+    flameGrad.addColorStop(1, `rgba(255,40,10,0)`);
+    ctx.fillStyle = flameGrad;
+    ctx.shadowColor = '#ff6b35';
+    ctx.shadowBlur = 20 * thrustFrac;
+    ctx.beginPath();
+    ctx.moveTo(-8, 12);
+    ctx.quadraticCurveTo(0, 12 + flameH * 0.7, 0, 12 + flameH);
+    ctx.quadraticCurveTo(0, 12 + flameH * 0.7, 8, 12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  // Body
+  ctx.strokeStyle = '#00d4ff';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#00d4ff';
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = '#0d1f3c';
+  ctx.beginPath();
+  ctx.roundRect(-18, -20, 36, 32, 4);
+  ctx.fill();
+  ctx.stroke();
+
+  // Window
+  ctx.beginPath();
+  ctx.arc(0, -6, 8, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(0,212,255,0.15)';
+  ctx.fill();
+  ctx.strokeStyle = '#00d4ff';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Legs
+  ctx.strokeStyle = '#4a6a9a';
+  ctx.lineWidth = 2;
+  ctx.shadowBlur = 0;
+  // Left leg
+  ctx.beginPath(); ctx.moveTo(-18, 8); ctx.lineTo(-30, 18); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-30, 18); ctx.lineTo(-36, 18); ctx.stroke();
+  // Right leg
+  ctx.beginPath(); ctx.moveTo(18, 8); ctx.lineTo(30, 18); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(30, 18); ctx.lineTo(36, 18); ctx.stroke();
+
+  // Altitude text
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(200,224,255,0.8)';
+  ctx.font = '11px Share Tech Mono';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${altitude.toFixed(1)}m`, 0, -28);
+  ctx.textAlign = 'left';
+
+  ctx.restore();
+}
+
+function drawRuler(ctx, W, H, groundY) {
+  const maxAlt = 900;
+  ctx.strokeStyle = 'rgba(74,106,154,0.4)';
+  ctx.fillStyle = 'rgba(74,106,154,0.7)';
+  ctx.font = '10px Share Tech Mono';
+  ctx.lineWidth = 1;
+  for (let a = 0; a <= maxAlt; a += 100) {
+    const y = altToY(a, H, groundY);
+    ctx.setLineDash([3,6]);
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillText(`${a}m`, 4, y - 2);
+  }
+}
+
+/* ===================== CHARTS ===================== */
+function updateCharts() {
+  // Thrust chart
+  {
+    const c = thrustChartCanvas, ctx = thrustCtx;
+    const W = c.width, H = c.height;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#050a14';
+    ctx.fillRect(0,0,W,H);
+
+    if (thrustHistory.length < 2) return;
+    const grad = ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0, 'rgba(255,107,53,0.8)');
+    grad.addColorStop(1, 'rgba(255,107,53,0.05)');
+
+    ctx.beginPath();
+    thrustHistory.forEach((v,i) => {
+      const x = (i/(HIST-1))*W;
+      const y = H - v*H;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+    ctx.strokeStyle = '#ff6b35'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    thrustHistory.forEach((v,i) => {
+      const x = (i/(HIST-1))*W;
+      const y = H - v*H;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  }
+}
+
+/* ===================== HUD ===================== */
+function updateHUD() {
+  const velAbs = Math.abs(velocity);
+  const velClass = velAbs < 5 ? 'ok' : velAbs < 15 ? 'warn' : 'danger';
+  const altClass = altitude > 50 ? 'ok' : altitude > 10 ? 'warn' : 'danger';
+  const fuelClass = fuel > 0.5 ? 'ok' : fuel > 0.2 ? 'warn' : 'danger';
+
   document.getElementById('hdrAlt').textContent = altitude.toFixed(1) + ' m';
+  document.getElementById('hdrAlt').className = altClass;
   document.getElementById('hdrVel').textContent = velocity.toFixed(2) + ' m/s';
-  document.getElementById('hdrThrust').textContent = (thrust*100).toFixed(0) + '%';
+  document.getElementById('hdrVel').className = velClass;
+  document.getElementById('hdrThrust').textContent = (currentThrust*100).toFixed(0) + '%';
+  document.getElementById('hdrFuel').textContent = infiniteFuel ? '∞' : (fuel*100).toFixed(1) + '%';
+  document.getElementById('hdrFuel').className = infiniteFuel ? 'ok' : fuelClass;
+  document.getElementById('telFuel').textContent = infiniteFuel ? '∞ (unlimited)' : (fuel*100).toFixed(1) + '%';
+  // Manual thrust display
+  if (mode === 'manual') {
+    const pct = (manualThrust*100).toFixed(0);
+    document.getElementById('thrustPct').textContent = pct;
+    document.getElementById('thrustBar').style.width = pct + '%';
+    document.getElementById('thrustSlider').value = manualThrust * 100;
+  }
+
+  // Telemetry
   document.getElementById('telAlt').textContent = altitude.toFixed(2) + ' m';
   document.getElementById('telVel').textContent = velocity.toFixed(3) + ' m/s';
   document.getElementById('telAcc').textContent = acceleration.toFixed(3) + ' m/s²';
   document.getElementById('telTime').textContent = elapsedTime.toFixed(1) + ' s';
-  
-  if (!['manual','bangbang'].includes(mode)) {
-    document.getElementById('liveError').textContent = (setpoint - altitude).toFixed(2);
-    document.getElementById('livePterm').textContent = pidPterm.toFixed(2);
-    document.getElementById('liveIterm').textContent = pidIterm.toFixed(2);
-    document.getElementById('liveDterm').textContent = pidDterm.toFixed(2);
-    document.getElementById('liveOutput').textContent = pidOutput.toFixed(2);
+  document.getElementById('logCount').textContent = dataLog.length.toLocaleString() + ' frames recorded';
+
+  // PID internals
+  if (mode !== 'manual' && mode !== 'bangbang') {
+    const error = setpoint - altitude;
+    document.getElementById('liveError').textContent = error.toFixed(3);
+    document.getElementById('livePterm').textContent = pidPterm.toFixed(4);
+    document.getElementById('liveIterm').textContent = pidIterm.toFixed(4);
+    document.getElementById('liveDterm').textContent = pidDterm.toFixed(4);
+    document.getElementById('liveOutput').textContent = pidOutput.toFixed(4);
+    const clamped = Math.max(0, Math.min(1, (gravity/maxThrust) + pidOutput/maxThrust));
+    document.getElementById('liveClamped').textContent = (clamped*100).toFixed(1) + '%';
+  } else {
+    ['liveError','livePterm','liveIterm','liveDterm','liveOutput','liveClamped'].forEach(id => {
+      document.getElementById(id).textContent = 'N/A';
+    });
   }
 }
 
-function mainLoop(ts) {
-  if (running && !landed && !crashed) {
-    const dt = 1/60;
-    const t = physicsStep(dt);
-    elapsedTime += dt;
-    if (altitude <= 5) {
-      altitude = 5; running = false;
-      const speed = Math.abs(velocity);
-      if (speed <= 5) landed = true; else crashed = true;
-      document.getElementById('overlay').classList.remove('hidden');
-      document.getElementById('overlayTitle').textContent = landed ? 'LANDED' : 'CRASHED';
-      document.getElementById('overlayTitle').className = landed ? 'success' : 'fail';
-    }
-    updateHUD(t);
+/* ===================== OVERLAY ===================== */
+function showOverlay(success, speed) {
+  const ov = document.getElementById('overlay');
+  const title = document.getElementById('overlayTitle');
+  const msg = document.getElementById('overlayMsg');
+  ov.classList.remove('hidden');
+  if (success) {
+    title.textContent = '✓ LANDED';
+    title.className = 'success';
+    msg.textContent = `Safe landing! Impact velocity: ${speed.toFixed(2)} m/s • Time: ${elapsedTime.toFixed(1)}s`;
+  } else {
+    title.textContent = '✗ CRASHED';
+    title.className = 'fail';
+    msg.textContent = `Impact velocity: ${speed.toFixed(2)} m/s (max 5 m/s) • ${elapsedTime.toFixed(1)}s`;
   }
-  draw();
+}
+
+function showFlash(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 800);
+}
+
+/* ===================== KEYBOARD ===================== */
+const keysDown = {};
+window.addEventListener('keydown', e => {
+  keysDown[e.code] = true;
+  if (e.code === 'Space') { manualThrust = 0; e.preventDefault(); }
+});
+window.addEventListener('keyup', e => { keysDown[e.code] = false; });
+
+function handleKeys() {
+  if (mode !== 'manual') return;
+  if (keysDown['ArrowUp'] || keysDown['KeyW']) {
+    manualThrust = Math.min(1, manualThrust + 0.01);
+  }
+  if (keysDown['ArrowDown'] || keysDown['KeyS']) {
+    manualThrust = Math.max(0, manualThrust - 0.01);
+  }
+}
+
+/* ===================== MAIN LOOP ===================== */
+let lastPhysicsTime = null;
+function mainLoop(ts) {
+  handleKeys();
+  if (!lastPhysicsTime) lastPhysicsTime = ts;
+  const elapsed = Math.min((ts - lastPhysicsTime)/1000, 0.05);
+  lastPhysicsTime = ts;
+
+  if (running && !landed && !crashed) {
+    // Check if we are in the "High Precision Zone"
+    if (altitude < 10) {
+      const subSteps = 5; // Run 5 tiny steps instead of 1 big one
+      const subDt = elapsed / subSteps;      
+      for (let i = 0; i < subSteps; i++) {
+        physicsStep(subDt); 
+      }
+    } else {
+      physicsStep(elapsed);
+    }
+    elapsedTime += elapsed;
+
+    // Check landing
+    if (altitude <= 5) {
+      altitude = 5;
+      const impactSpeed = Math.abs(velocity);
+      velocity = 0;
+      running = false;
+      if (impactSpeed <= 5) {
+        landed = true;
+        showOverlay(true, impactSpeed);
+        showFlash('flash');
+      } else {
+        crashed = true;
+        showOverlay(false, impactSpeed);
+        showFlash('crashFlash');
+      }
+    }
+
+    // Push history
+    altHistory.push(altitude);
+    velHistory.push(velocity);
+    thrustHistory.push(currentThrust);
+    if (altHistory.length > HIST) { altHistory.shift(); velHistory.shift(); thrustHistory.shift(); }
+
+    // Data log (every frame, full resolution)
+    const logError = (mode === 'manual' || mode === 'bangbang') ? 0 : (setpoint - altitude);
+    dataLog.push([
+      elapsedTime.toFixed(4),
+      mode,
+      gravity.toFixed(4),
+      altitude.toFixed(4),
+      velocity.toFixed(4),
+      logError.toFixed(4),
+      (currentThrust * 100).toFixed(2),
+      (fuel * 100).toFixed(2)
+    ]);
+  }
+
+  if (simCanvas.width > 0) {
+    draw();
+    updateHUD();
+    updateCharts();
+  }
+
   requestAnimationFrame(mainLoop);
 }
 
+/* ===================== DATA EXPORT ===================== */
 function downloadLog() {
-  const blob = new Blob([dataLog.join('\n')], {type: 'text/plain'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lander_log.txt'; a.click();
+  if (dataLog.length === 0) {
+    alert('No data recorded yet. Start the simulation first.');
+    return;
+  }
+  const header = '%time(s)\tmode\tgravity(m/s2)\theight(m)\tspeed(m/s)\terror(m)\tthrust_command(%)\tfuel(%)';
+  const rows = dataLog.map(r => r.join('\t'));
+  const content = [header, ...rows].join('\n');
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `pid_lander_log_${new Date().toISOString().slice(0,19).replace(/[T:]/g,'-')}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
-window.addEventListener('load', () => { resizeSim(); resetSim(); requestAnimationFrame(mainLoop); });
+/* ===================== BOOT ===================== */
+window.addEventListener('load', () => {
+  resizeSim();
+  resetSim();
+  // start with infinite fuel on
+  document.getElementById('infiniteFuelChk').checked = true;
+  updateFuelUI();
+  requestAnimationFrame(mainLoop);
+});
 window.addEventListener('resize', resizeSim);
 </script>
 </body>
