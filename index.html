@@ -653,7 +653,7 @@
     <div class="section">
       <div class="section-title">Safe Landing Criteria</div>
       <div class="pid-row"><label>Impact velocity</label><value id="safeCrit" style="color:var(--accent3)">≤ 5 m/s</value></div>
-      <div class="pid-row"><label>Altitude = 0 m</label><value style="color:var(--dim)">touch ground</value></div>
+      <div class="pid-row"><label>Altitude</label><value style="color:var(--dim)">≤ 5 m</value></div>
     </div>
 
     <!-- Data export -->
@@ -952,9 +952,10 @@ function draw() {
     ctx.fillText(`TARGET: ${setpoint}m`, 8, spY - 4);
   }
 
-  // Lander
+  // Lander — offset upward by 18px so feet (local y=18) sit on the ground
+  const FEET_OFFSET = 18;
   const landerX = W / 2;
-  const landerY = altToY(altitude, H, groundY);
+  const landerY = altToY(altitude, H, groundY) - FEET_OFFSET;
   drawLander(ctx, landerX, landerY, currentThrust);
 
   // Altitude ruler
@@ -964,7 +965,7 @@ function draw() {
   if (Math.abs(velocity) > 0.5) {
     const vScale = 8;
     const arrowLen = Math.min(Math.abs(velocity) * vScale, 60);
-    const dir = velocity > 0 ? -1 : 1; // negative Y = upward
+    const dir = velocity > 0 ? -1 : 1;
     ctx.strokeStyle = velocity > 0 ? '#39ff14' : '#ff6b35';
     ctx.lineWidth = 2;
     ctx.shadowColor = velocity > 0 ? '#39ff14' : '#ff6b35';
@@ -973,7 +974,6 @@ function draw() {
     ctx.moveTo(landerX + 30, landerY);
     ctx.lineTo(landerX + 30, landerY + dir * arrowLen);
     ctx.stroke();
-    // Arrowhead
     ctx.beginPath();
     ctx.moveTo(landerX + 30, landerY + dir * arrowLen);
     ctx.lineTo(landerX + 25, landerY + dir * (arrowLen - 10));
