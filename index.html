@@ -167,6 +167,7 @@
     box-shadow: 0 0 10px rgba(0,212,255,0.2);
   }
   .mode-btn.manual.active { color: var(--accent2); border-color: var(--accent2); background: rgba(255,107,53,0.1); box-shadow: 0 0 10px rgba(255,107,53,0.2); }
+  .mode-btn.bangbang.active { color: var(--warn); border-color: var(--warn); background: rgba(255,204,0,0.1); box-shadow: 0 0 10px rgba(255,204,0,0.2); }
 
   /* SLIDERS */
   .slider-row {
@@ -481,7 +482,7 @@
         <button class="mode-btn" id="btn-pd" onclick="setMode('PD')">PD</button>
         <button class="mode-btn" id="btn-pi" onclick="setMode('PI')">PI</button>
         <button class="mode-btn" id="btn-pid" onclick="setMode('PID')" style="grid-column:span 2">PID (Full)</button>
-        <button class="mode-btn" id="btn-bangbang" onclick="setMode('bangbang')" style="grid-column:span 2;border-color:var(--warn);color:var(--warn)">⚡ BANG-BANG (Optimal)</button>
+        <button class="mode-btn bangbang" id="btn-bangbang" onclick="setMode('bangbang')" style="grid-column:span 2">⚡ BANG-BANG (Optimal)</button>
       </div>
     </div>
 
