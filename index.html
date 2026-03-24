@@ -722,7 +722,7 @@ let crashed = false;
 
 // History buffers
 const HIST = 300;
-let altHistory = [], velHistory = [], thrustHistory = [];
+let thrustHistory = [];
 
 // Data log (full resolution, every frame)
 let dataLog = [];
@@ -751,7 +751,7 @@ function resetSim() {
   elapsedTime = 0;
   integralErr = 0; prevError = 0;
   pidPterm = 0; pidIterm = 0; pidDterm = 0; pidOutput = 0;
-  altHistory = []; velHistory = []; thrustHistory = [];
+  thrustHistory = [];
   dataLog = [];
   landed = false; crashed = false;
   manualThrust = 0;
@@ -1229,10 +1229,8 @@ function mainLoop(ts) {
     }
 
     // Push history
-    altHistory.push(altitude);
-    velHistory.push(velocity);
     thrustHistory.push(currentThrust);
-    if (altHistory.length > HIST) { altHistory.shift(); velHistory.shift(); thrustHistory.shift(); }
+    if (thrustHistory.length > HIST) { thrustHistory.shift(); }
 
     // Data log (every frame, full resolution)
     const logError = (mode === 'manual' || mode === 'bangbang') ? 0 : (setpoint - altitude);
