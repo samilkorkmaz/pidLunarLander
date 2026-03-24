@@ -1249,8 +1249,8 @@ function mainLoop(ts) {
     elapsedTime += elapsed;
 
     // Check landing
-    if (altitude <= 0) {
-      altitude = 0;
+    if (altitude <= 5) {
+      altitude = 5;
       const impactSpeed = Math.abs(velocity);
       velocity = 0;
       running = false;
