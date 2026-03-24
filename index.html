@@ -821,76 +821,9 @@ function computePID(dt) {
 }
 
 /* ===================== PHYSICS ===================== */
-const DT = 1/60;
-let lastTime = null;
+const fuelConsumptionRate = 0.00015;
 let currentThrust = 0;
 
-function update(ts) {
-  if (!running || landed || crashed) { requestAnimationFrame(update); return; }
-  if (!lastTime) lastTime = ts;
-  const elapsed = Math.min((ts - lastTime)/1000, 0.05);
-  lastTime = ts;
-  elapsedTime += elapsed;
-
-  // Determine thrust
-  let thrustFrac;
-  if (mode === 'manual') {
-    thrustFrac = fuel > 0 ? manualThrust : 0;
-  } else {
-    thrustFrac = fuel > 0 ? computePID(elapsed) : 0;
-  }
-  currentThrust = thrustFrac;
-
-  // Consume fuel (simple model)
-  fuel = Math.max(0, fuel - thrustFrac * 0.002 * elapsed * 60);
-
-  // Physics
-  const thrustAccel = thrustFrac * maxThrust;
-  acceleration = thrustAccel - gravity;
-  velocity += acceleration * elapsed;
-  altitude -= velocity * elapsed; // altitude decreases as positive velocity = downward
-  // Actually: let's define positive velocity = upward
-  // Re-model: net accel = thrust - gravity (upward positive)
-  // altitude increases with positive velocity
-
-  // Touch down
-  if (altitude <= 0) {
-    altitude = 0;
-    const impactSpeed = Math.abs(velocity);
-    if (impactSpeed <= 5) {
-      landed = true;
-      showOverlay(true, impactSpeed);
-      showFlash('flash');
-    } else {
-      crashed = true;
-      showOverlay(false, impactSpeed);
-      showFlash('crashFlash');
-    }
-    velocity = 0;
-  }
-
-  // Escape if goes too high
-  if (altitude > 1200) altitude = 1200;
-
-  // Push history
-  altHistory.push(altitude);
-  velHistory.push(velocity);
-  thrustHistory.push(currentThrust);
-  if (altHistory.length > HIST) { altHistory.shift(); velHistory.shift(); thrustHistory.shift(); }
-
-  draw();
-  updateHUD();
-  updateCharts();
-  requestAnimationFrame(update);
-}
-
-/* ===================== PHYSICS INIT (upward positive) ===================== */
-// Re-align physics: positive velocity = upward, altitude = height above ground
-// acceleration = thrustAccel - gravity (always pulling down)
-// velocity += accel * dt
-// altitude += velocity * dt
-
-/* Overwrite update with corrected physics */
 function physicsStep(elapsed) {
   let thrustFrac;
   if (mode === 'manual') {
@@ -899,7 +832,7 @@ function physicsStep(elapsed) {
     thrustFrac = fuel > 0 ? computePID(elapsed) : 0;
   }
   currentThrust = thrustFrac;
-  if (!infiniteFuel) fuel = Math.max(0, fuel - thrustFrac * 0.0015 * elapsed * 60);
+  if (!infiniteFuel) fuel = Math.max(0, fuel - thrustFrac * fuelConsumptionRate * elapsed * 60);
   const thrustAccel = thrustFrac * maxThrust;
   acceleration = thrustAccel - gravity; // upward positive
   velocity += acceleration * elapsed;
