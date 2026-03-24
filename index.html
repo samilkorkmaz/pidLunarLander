@@ -660,7 +660,6 @@
       <div class="pid-row"><label>Acceleration</label><value id="telAcc">—</value></div>
       <div class="pid-row"><label>Fuel</label><value id="telFuel">—</value></div>
       <div class="pid-row"><label>Time</label><value id="telTime">—</value></div>
-      <div class="pid-row"><label>Gravity</label><value id="telGrav">—</value></div>
     </div>
 
     <!-- Landing guide -->
@@ -1186,7 +1185,6 @@ function updateHUD() {
   document.getElementById('telVel').textContent = velocity.toFixed(3) + ' m/s';
   document.getElementById('telAcc').textContent = acceleration.toFixed(3) + ' m/s²';
   document.getElementById('telTime').textContent = elapsedTime.toFixed(1) + ' s';
-  document.getElementById('telGrav').textContent = gravity.toFixed(2) + ' m/s²';
   document.getElementById('logCount').textContent = dataLog.length.toLocaleString() + ' frames recorded';
 
   // PID internals
