@@ -1256,7 +1256,16 @@ function mainLoop(ts) {
   lastPhysicsTime = ts;
 
   if (running && !landed && !crashed) {
-    physicsStep(elapsed);
+    // Check if we are in the "High Precision Zone"
+    if (altitude < 10) {
+      const subSteps = 5; // Run 5 tiny steps instead of 1 big one
+      const subDt = elapsed / subSteps;      
+      for (let i = 0; i < subSteps; i++) {
+        physicsStep(subDt); 
+      }
+    } else {
+      physicsStep(elapsed);
+    }
     elapsedTime += elapsed;
 
     // Check landing
