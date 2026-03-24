@@ -838,9 +838,11 @@ function computePID(dt) {
 }
 
 /* ===================== BANG-BANG ===================== */
-// Landing target: altitude = 5m, velocity = -5 m/s (downward, i.e. velocity = -5)
-const BB_TARGET_ALT = 5;
-const BB_MAX_IMPACT  = 5; // m/s downward
+// Landing target: altitude = 5m, impact speed ≤ 5 m/s
+const BB_TARGET_ALT  = 5;
+const BB_MAX_IMPACT  = 5;   // m/s — displayed constraint
+const BB_AIM_IMPACT  = 3.5; // m/s — internal aim point (safety margin for discrete timestep)
+const BB_SAFETY_M    = 2.0; // m   — extra altitude margin on switch point
 
 function computeBangBang() {
   const netBrakeAccel = maxThrust - gravity; // upward decel when full thrust
@@ -849,12 +851,13 @@ function computeBangBang() {
   // Current downward speed (positive = falling)
   const downSpeed = -velocity; // velocity is upward-positive
 
-  // Braking distance needed to reduce downSpeed to BB_MAX_IMPACT
-  // v² - u² = 2·a·d  →  d = (downSpeed² - BB_MAX_IMPACT²) / (2·netBrakeAccel)
+  // Braking distance needed to reduce downSpeed to aim impact speed
+  // v² - u² = 2·a·d  →  d = (downSpeed² - aimSpeed²) / (2·netBrakeAccel)
+  const aimSpeed = Math.min(BB_AIM_IMPACT, BB_MAX_IMPACT);
   const brakingDist = Math.max(0,
-    (downSpeed * downSpeed - BB_MAX_IMPACT * BB_MAX_IMPACT) / (2 * netBrakeAccel)
+    (downSpeed * downSpeed - aimSpeed * aimSpeed) / (2 * netBrakeAccel)
   );
-  const switchAlt = BB_TARGET_ALT + brakingDist;
+  const switchAlt = BB_TARGET_ALT + brakingDist + BB_SAFETY_M;
 
   // Update info panel
   document.getElementById('bbNetAccel').textContent = netBrakeAccel.toFixed(3) + ' m/s²';
@@ -947,9 +950,9 @@ function draw() {
     if (netBrakeAccel > 0) {
       const downSpeed = -velocity;
       const brakingDist = Math.max(0,
-        (downSpeed * downSpeed - BB_MAX_IMPACT * BB_MAX_IMPACT) / (2 * netBrakeAccel)
+        (downSpeed * downSpeed - BB_AIM_IMPACT * BB_AIM_IMPACT) / (2 * netBrakeAccel)
       );
-      const switchAlt = BB_TARGET_ALT + brakingDist;
+      const switchAlt = BB_TARGET_ALT + brakingDist + BB_SAFETY_M;
       const swY = altToY(switchAlt, H, groundY);
       ctx.strokeStyle = 'rgba(255,204,0,0.7)';
       ctx.lineWidth = 1.5;
