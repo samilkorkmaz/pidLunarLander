@@ -481,6 +481,7 @@
         <button class="mode-btn" id="btn-pd" onclick="setMode('PD')">PD</button>
         <button class="mode-btn" id="btn-pi" onclick="setMode('PI')">PI</button>
         <button class="mode-btn" id="btn-pid" onclick="setMode('PID')" style="grid-column:span 2">PID (Full)</button>
+        <button class="mode-btn" id="btn-bangbang" onclick="setMode('bangbang')" style="grid-column:span 2;border-color:var(--warn);color:var(--warn)">⚡ BANG-BANG (Optimal)</button>
       </div>
     </div>
 
@@ -546,8 +547,19 @@
       </div>
     </div>
 
-    <!-- Physics -->
-    <div class="section">
+    <!-- Bang-Bang Info -->
+    <div class="section" id="bangbangSection" style="display:none">
+      <div class="section-title">Bang-Bang Strategy</div>
+      <div class="pid-formula" style="line-height:2">
+        Phase 1: <span class="hl2">Thrust = 0</span> (free-fall)<br>
+        Phase 2: <span class="hl">Thrust = 100%</span> (full brake)<br>
+        Switch when alt ≤ <span class="hl3" id="bbSwitchAlt">—</span> m
+      </div>
+      <div class="pid-row"><label>Net brake accel</label><value id="bbNetAccel">—</value></div>
+      <div class="pid-row"><label>Switch altitude</label><value id="bbSwitchAlt2" style="color:var(--warn)">—</value></div>
+      <div class="pid-row"><label>Phase</label><value id="bbPhase" style="color:var(--accent2)">FREEFALL</value></div>
+      <div class="tooltip" style="margin-top:4px">Pontryagin's Minimum Principle: always thrust at 0% or 100%. Switch point computed from current velocity each frame.</div>
+    </div>
       <div class="section-title">Environment</div>
       <div class="slider-row">
         <div class="slider-label">
@@ -556,7 +568,7 @@
         </div>
         <input type="range" min="0.1" max="20" step="0.1" value="1.62" id="gravSlider"
           oninput="gravity=parseFloat(this.value);document.getElementById('gravVal').textContent=gravity.toFixed(2)">
-        <div class="tooltip">🌙 Moon=1.62 · 🌍 Earth=9.81</div>
+        <div class="tooltip">🌙 Moon=1.62 · 🌍 Earth=9.81 · 🔴 Mars=3.72</div>
       </div>
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px">
         <button class="btn" style="margin:0;padding:5px 8px;font-size:0.62rem" onclick="setGrav(1.62)">Moon</button>
@@ -768,11 +780,14 @@ function setMode(m) {
   document.getElementById('btn-'+m.toLowerCase()).classList.add('active');
   document.getElementById('hdrMode').textContent = m.toUpperCase();
   document.getElementById('hdrMode').style.color =
-    m === 'manual' ? 'var(--accent2)' : 'var(--accent)';
+    m === 'manual' ? 'var(--accent2)' : m === 'bangbang' ? 'var(--warn)' : 'var(--accent)';
 
   const isManual = m === 'manual';
+  const isBangBang = m === 'bangbang';
+  const isPID = !isManual && !isBangBang;
   document.getElementById('manualSection').style.display = isManual ? '' : 'none';
-  document.getElementById('pidSection').style.display = isManual ? 'none' : '';
+  document.getElementById('pidSection').style.display = isPID ? '' : 'none';
+  document.getElementById('bangbangSection').style.display = isBangBang ? '' : 'none';
 
   // Show/hide param rows
   document.getElementById('kiRow').style.display = (m === 'PI' || m === 'PID') ? '' : 'none';
@@ -818,6 +833,43 @@ function computePID(dt) {
   return thrustFrac;
 }
 
+/* ===================== BANG-BANG ===================== */
+// Landing target: altitude = 5m, velocity = -5 m/s (downward, i.e. velocity = -5)
+const BB_TARGET_ALT = 5;
+const BB_MAX_IMPACT  = 5; // m/s downward
+
+function computeBangBang() {
+  const netBrakeAccel = maxThrust - gravity; // upward decel when full thrust
+  if (netBrakeAccel <= 0) return 0; // can't brake — thrust too weak
+
+  // Current downward speed (positive = falling)
+  const downSpeed = -velocity; // velocity is upward-positive
+
+  // Braking distance needed to reduce downSpeed to BB_MAX_IMPACT
+  // v² - u² = 2·a·d  →  d = (downSpeed² - BB_MAX_IMPACT²) / (2·netBrakeAccel)
+  const brakingDist = Math.max(0,
+    (downSpeed * downSpeed - BB_MAX_IMPACT * BB_MAX_IMPACT) / (2 * netBrakeAccel)
+  );
+  const switchAlt = BB_TARGET_ALT + brakingDist;
+
+  // Update info panel
+  document.getElementById('bbNetAccel').textContent = netBrakeAccel.toFixed(3) + ' m/s²';
+  document.getElementById('bbSwitchAlt').textContent  = switchAlt.toFixed(1);
+  document.getElementById('bbSwitchAlt2').textContent = switchAlt.toFixed(1) + ' m';
+
+  if (altitude <= switchAlt) {
+    // Braking phase — full thrust
+    document.getElementById('bbPhase').textContent = 'BRAKING';
+    document.getElementById('bbPhase').style.color = 'var(--accent)';
+    return 1.0;
+  } else {
+    // Freefall phase — zero thrust
+    document.getElementById('bbPhase').textContent = 'FREEFALL';
+    document.getElementById('bbPhase').style.color = 'var(--accent2)';
+    return 0.0;
+  }
+}
+
 /* ===================== PHYSICS ===================== */
 const fuelConsumptionRate = 0.0015;
 let currentThrust = 0;
@@ -826,6 +878,8 @@ function physicsStep(elapsed) {
   let thrustFrac;
   if (mode === 'manual') {
     thrustFrac = fuel > 0 ? manualThrust : 0;
+  } else if (mode === 'bangbang') {
+    thrustFrac = fuel > 0 ? computeBangBang() : 0;
   } else {
     thrustFrac = fuel > 0 ? computePID(elapsed) : 0;
   }
@@ -871,7 +925,7 @@ function draw() {
   ctx.setLineDash([]);
 
   // Setpoint line (auto modes)
-  if (mode !== 'manual') {
+  if (mode !== 'manual' && mode !== 'bangbang') {
     const spY = altToY(setpoint, H, groundY);
     ctx.strokeStyle = 'rgba(255,204,0,0.5)';
     ctx.lineWidth = 1;
@@ -881,6 +935,27 @@ function draw() {
     ctx.fillStyle = 'rgba(255,204,0,0.7)';
     ctx.font = '11px Share Tech Mono';
     ctx.fillText(`TARGET: ${setpoint}m`, 8, spY - 4);
+  }
+
+  // Bang-bang switch altitude line
+  if (mode === 'bangbang') {
+    const netBrakeAccel = maxThrust - gravity;
+    if (netBrakeAccel > 0) {
+      const downSpeed = -velocity;
+      const brakingDist = Math.max(0,
+        (downSpeed * downSpeed - BB_MAX_IMPACT * BB_MAX_IMPACT) / (2 * netBrakeAccel)
+      );
+      const switchAlt = BB_TARGET_ALT + brakingDist;
+      const swY = altToY(switchAlt, H, groundY);
+      ctx.strokeStyle = 'rgba(255,204,0,0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6,4]);
+      ctx.beginPath(); ctx.moveTo(0, swY); ctx.lineTo(W, swY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(255,204,0,0.85)';
+      ctx.font = '11px Share Tech Mono';
+      ctx.fillText(`SWITCH: ${switchAlt.toFixed(1)}m`, 8, swY - 4);
+    }
   }
 
   // Lander — offset upward by 18px so feet (local y=18) sit on the ground
@@ -1108,7 +1183,7 @@ function updateHUD() {
   document.getElementById('logCount').textContent = dataLog.length.toLocaleString() + ' frames recorded';
 
   // PID internals
-  if (mode !== 'manual') {
+  if (mode !== 'manual' && mode !== 'bangbang') {
     const error = setpoint - altitude;
     document.getElementById('liveError').textContent = error.toFixed(3);
     document.getElementById('livePterm').textContent = pidPterm.toFixed(4);
@@ -1203,7 +1278,7 @@ function mainLoop(ts) {
     if (altHistory.length > HIST) { altHistory.shift(); velHistory.shift(); thrustHistory.shift(); }
 
     // Data log (every frame, full resolution)
-    const logError = mode === 'manual' ? 0 : (setpoint - altitude);
+    const logError = (mode === 'manual' || mode === 'bangbang') ? 0 : (setpoint - altitude);
     dataLog.push([
       elapsedTime.toFixed(4),
       mode,
