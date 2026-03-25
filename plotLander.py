@@ -6,53 +6,56 @@ import numpy as np
 file_list = [
     'pid_lander_log_2026-03-25-09-19-02.txt',
     'pid_lander_log_2026-03-25-09-20-44.txt'
-    # You can add more files here
 ]
 
 def plot_lander_telemetry(files):
-    # Create a figure with 2 subplots (2 rows, 1 column)
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
+    # 3 subplots: Height, Speed, and Thrust Command
+    # figsize (8, 6) at 100 DPI = 800x600 pixels
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 6), dpi=100, sharex=True)
     
-    # Generate distinct colors
-    colors = plt.cm.plasma(np.linspace(0, 0.8, len(files)))
+    colors = plt.cm.viridis(np.linspace(0, 0.8, len(files)))
 
     for i, file_path in enumerate(files):
         try:
-            # Load and clean data
             df = pd.read_csv(file_path, sep='\t')
-            df.columns = df.columns.str.replace('%', '').str.strip()
+            df.columns = df.columns.str.replace('%', '').str.strip() # Clean column names, remove % and whitespace
             
-            # Extract the mode for the legend
             run_mode = df['mode'].iloc[0] if 'mode' in df.columns else file_path
             
-            # --- Subplot 1: Height ---
+            # 1. Height Plot
             ax1.plot(df['time(s)'], df['height(m)'], 
-                     label=f"Mode: {run_mode}", color=colors[i], linewidth=2)
+                     label=f"Mode: {run_mode}", color=colors[i], linewidth=1.5)
             
-            # --- Subplot 2: Speed ---
+            # 2. Speed Plot
             ax2.plot(df['time(s)'], df['speed(m/s)'], 
-                     color=colors[i], linewidth=2, linestyle='--')
+                     color=colors[i], linewidth=1.5)
+            
+            # 3. Thrust Command Plot
+            ax3.plot(df['time(s)'], df['thrust_command()'], # Note that since we removed % from column names, we use 'thrust_command()' instead of 'thrust_command(%)'
+                     color=colors[i], linewidth=1.5, alpha=0.8)
             
         except Exception as e:
             print(f"Error processing {file_path}: {e}")
 
-    # Styling Top Plot (Height)
+    # Formatting Top Plot (Height)
     ax1.set_ylabel('Height (m)')
-    ax1.set_title('Lander Flight Profile: Height & Speed Comparison')
+    ax1.set_title('Lander Telemetry: Height, Speed, & Thrust')
     ax1.set_ylim(bottom=0)
-    ax1.grid(True, linestyle='--', alpha=0.5)
-    ax1.legend(loc='upper right')
+    ax1.grid(True, linestyle=':', alpha=0.6)
+    ax1.legend(loc='upper right', fontsize='x-small')
 
-    # Styling Bottom Plot (Speed)
+    # Formatting Middle Plot (Speed)
     ax2.set_ylabel('Speed (m/s)')
-    ax2.set_xlabel('Time (s)')
-    ax2.grid(True, linestyle='--', alpha=0.5)
-    
-    # Optional: Add a horizontal line at 0 speed to see hover/touchdown clearly
-    ax2.axhline(0, color='black', linewidth=1, alpha=0.3)
+    ax2.grid(True, linestyle=':', alpha=0.6)
+    ax2.axhline(0, color='black', linewidth=0.8, alpha=0.3)
+
+    # Formatting Bottom Plot (Thrust)
+    ax3.set_ylabel('Thrust (%)')
+    ax3.set_xlabel('Time (s)')
+    ax3.set_ylim(-5, 105) # Thrust is usually 0-100%
+    ax3.grid(True, linestyle=':', alpha=0.6)
 
     plt.tight_layout()
     plt.show()
 
-# Run the updated plotting function
 plot_lander_telemetry(file_list)
