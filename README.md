@@ -6,7 +6,7 @@ Game live on https://samilkorkmaz.github.io/pidLunarLander/
 Use **plotLander.py** to plot saved log file.
 
 TODO:
-* Variable mass option: Mass decrease should stop at empty mass m0
+* Variable mass option: If fuel is infinite, mass decrease should stop at a predefined empty vehile mass m0
 * Inject error:  
   * Noise in altitude sensor
   * Noise in thrust
