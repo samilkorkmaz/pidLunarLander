@@ -4,12 +4,12 @@ import numpy as np
 
 # List of your log files
 file_list = [
-    'pid_lander_log_2026-03-25-09-19-02.txt',
-    'pid_lander_log_2026-03-25-09-20-44.txt'
+    'pid_lander_log_2026-03-25-09-19-02.txt',    
+    'pid_lander_log_2026-03-25-12-13-54.txt'
 ]
 
 def plot_lander_telemetry(files):
-    # 3 subplots: Height, Speed, and Thrust Command
+    # 3 subplots: Height, Velocity, and Thrust Command
     # figsize (8, 6) at 100 DPI = 800x600 pixels
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 6), dpi=100, sharex=True)
     
@@ -26,8 +26,8 @@ def plot_lander_telemetry(files):
             ax1.plot(df['time(s)'], df['height(m)'], 
                      label=f"Mode: {run_mode}", color=colors[i], linewidth=1.5)
             
-            # 2. Speed Plot
-            ax2.plot(df['time(s)'], df['speed(m/s)'], 
+            # 2. Velocity Plot
+            ax2.plot(df['time(s)'], df['velocity(m/s)'], 
                      color=colors[i], linewidth=1.5)
             
             # 3. Thrust Command Plot
@@ -39,15 +39,18 @@ def plot_lander_telemetry(files):
 
     # Formatting Top Plot (Height)
     ax1.set_ylabel('Height (m)')
-    ax1.set_title('Lander Telemetry: Height, Speed, & Thrust')
+    ax1.set_title('Lander Telemetry: Height, Velocity, & Thrust')
     ax1.set_ylim(bottom=0)
     ax1.grid(True, linestyle=':', alpha=0.6)
     ax1.legend(loc='upper right', fontsize='x-small')
 
-    # Formatting Middle Plot (Speed)
-    ax2.set_ylabel('Speed (m/s)')
+    # Formatting Middle Plot (Velocity)
+    ax2.set_ylabel('Velocity +up (m/s)')
     ax2.grid(True, linestyle=':', alpha=0.6)
     ax2.axhline(0, color='black', linewidth=0.8, alpha=0.3)
+    # 5m/s limit for safe landing velocity
+    ax2.axhline(-5, color='red', linestyle='--', linewidth=1.2, label='Safe Speed Limit (5m/s)')
+    ax2.legend(loc='upper right', fontsize='x-small') # Added legend to show the limit label
 
     # Formatting Bottom Plot (Thrust)
     ax3.set_ylabel('Thrust (%)')
