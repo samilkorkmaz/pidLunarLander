@@ -1264,7 +1264,7 @@ function downloadLog() {
     alert('No data recorded yet. Start the simulation first.');
     return;
   }
-  const header = '%time(s)\tmode\tgravity(m/s2)\theight(m)\tspeed(m/s)\terror(m)\tthrust_command(%)\tfuel(%)';
+  const header = '%time(s)\tmode\tgravity(m/s2)\theight(m)\tvelocity(m/s)\terror(m)\tthrust_command(%)\tfuel(%)';
   const rows = dataLog.map(r => r.join('\t'));
   const content = [header, ...rows].join('\n');
   const blob = new Blob([content], { type: 'text/plain' });
