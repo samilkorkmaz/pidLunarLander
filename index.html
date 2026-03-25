@@ -1211,23 +1211,6 @@ function mainLoop(ts) {
     }
     elapsedTime += elapsed;
 
-    // Check landing
-    if (altitude <= 5) {
-      altitude = 5;
-      const impactSpeed = Math.abs(velocity);
-      velocity = 0;
-      running = false;
-      if (impactSpeed <= 5) {
-        landed = true;
-        showOverlay(true, impactSpeed);
-        showFlash('flash');
-      } else {
-        crashed = true;
-        showOverlay(false, impactSpeed);
-        showFlash('crashFlash');
-      }
-    }
-
     // Push history
     thrustHistory.push(currentThrust);
     if (thrustHistory.length > HIST) { thrustHistory.shift(); }
@@ -1244,6 +1227,23 @@ function mainLoop(ts) {
       (currentThrust * 100).toFixed(2),
       (fuel * 100).toFixed(2)
     ]);
+
+    // Check landing
+    if (altitude <= 5) {
+      altitude = 5;
+      const impactSpeed = Math.abs(velocity);      
+      velocity = 0;
+      running = false;
+      if (impactSpeed <= 5) {
+        landed = true;
+        showOverlay(true, impactSpeed);
+        showFlash('flash');
+      } else {
+        crashed = true;
+        showOverlay(false, impactSpeed);
+        showFlash('crashFlash');
+      }
+    }    
   }
 
   if (simCanvas.width > 0) {
