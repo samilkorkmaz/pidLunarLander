@@ -10,5 +10,5 @@ TODO:
 * Inject error:  
   * Noise in altitude sensor
   * Noise in thrust
-* Make thrust a first order system so that thrust changes smoothly
+* Make thrust realized a first order system so that thrust changes smoothly. Add thrust realized to log.
   
