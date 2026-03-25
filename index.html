@@ -655,7 +655,7 @@
     <div class="section">
       <div class="section-title">Safe Landing Criteria</div>
       <div class="pid-row"><label>Impact velocity</label><value id="safeCrit" style="color:var(--accent3)">≤ 5 m/s</value></div>
-      <div class="pid-row"><label>Altitude</label><value style="color:var(--dim)">≤ 5 m</value></div>
+      <div class="pid-row"><label>Altitude</label><value style="color:var(--dim)">≤ 4 m</value></div>
     </div>
 
     <!-- Data export -->
@@ -824,7 +824,7 @@ function computePID(dt) {
 }
 
 /* ===================== BANG-BANG ===================== */
-// Landing target: altitude = 5m, impact speed ≤ 5 m/s
+// Landing target: altitude = 5m (to be at safe speed at 4m), impact speed ≤ 5 m/s
 const BB_TARGET_ALT  = 5;
 const BB_MAX_IMPACT  = 5;   // m/s — displayed constraint
 const BB_AIM_IMPACT  = 3.5; // m/s — internal aim point (safety margin for discrete timestep)
