@@ -473,6 +473,48 @@
   <!-- LEFT PANEL -->
   <div class="left-panel">
 
+    <!-- Environment (moved to top) -->
+    <div class="section">
+      <div class="section-title">Environment</div>
+      <div class="slider-row">
+        <div class="slider-label">
+          <span>Gravity (m/s²)</span>
+          <value id="gravVal">1.62</value>
+        </div>
+        <input type="range" min="0.1" max="20" step="0.1" value="1.62" id="gravSlider"
+          oninput="gravity=parseFloat(this.value);document.getElementById('gravVal').textContent=gravity.toFixed(2)">
+        <div class="tooltip">🌙 Moon=1.62 · 🌍 Earth=9.81</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px">
+        <button class="btn" style="margin:0;padding:5px 8px;font-size:0.62rem" onclick="setGrav(1.62)">Moon</button>
+        <button class="btn" style="margin:0;padding:5px 8px;font-size:0.62rem" onclick="setGrav(9.81)">Earth</button>
+      </div>
+      <hr class="divider" style="margin-top:8px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 0;user-select:none">
+        <input type="checkbox" id="infiniteFuelChk"
+          onchange="infiniteFuel=this.checked;updateFuelUI()"
+          style="width:16px;height:16px;accent-color:var(--accent3);cursor:pointer">
+        <span style="font-size:0.72rem;color:var(--text)">∞ Infinite Fuel</span>
+        <span id="infiniteFuelBadge" style="display:none;font-size:0.6rem;background:rgba(57,255,20,0.15);color:var(--accent3);border:1px solid var(--accent3);border-radius:3px;padding:1px 5px">ON</span>
+      </label>
+      <div class="slider-row" style="margin-top:6px">
+        <div class="slider-label">
+          <span>Max Thrust (N/kg)</span>
+          <value id="maxThrustVal">11</value>
+        </div>
+        <input type="range" min="1" max="30" step="0.1" value="3.5" id="maxThrustSlider"
+          oninput="maxThrust=parseFloat(this.value);document.getElementById('maxThrustVal').textContent=maxThrust.toFixed(2)">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label">
+          <span>Initial Altitude (m)</span>
+          <value id="initAltVal">500</value>
+        </div>
+        <input type="range" min="100" max="900" step="10" value="500" id="initAltSlider"
+          oninput="initAlt=parseFloat(this.value);document.getElementById('initAltVal').textContent=initAlt.toFixed(0)">
+      </div>
+    </div>
+
     <!-- Control Mode -->
     <div class="section">
       <div class="section-title">Control Mode</div>
@@ -560,48 +602,6 @@
       <div class="pid-row"><label>Switch altitude</label><value id="bbSwitchAlt2" style="color:var(--warn)">—</value></div>
       <div class="pid-row"><label>Phase</label><value id="bbPhase" style="color:var(--accent2)">FREEFALL</value></div>
       <div class="tooltip" style="margin-top:4px">Pontryagin's Minimum Principle: always thrust at 0% or 100%. Switch point computed from current velocity each frame.</div>
-    </div>
-
-    <!-- Physics -->
-    <div class="section">
-      <div class="section-title">Environment</div>
-      <div class="slider-row">
-        <div class="slider-label">
-          <span>Gravity (m/s²)</span>
-          <value id="gravVal">1.62</value>
-        </div>
-        <input type="range" min="0.1" max="20" step="0.1" value="1.62" id="gravSlider"
-          oninput="gravity=parseFloat(this.value);document.getElementById('gravVal').textContent=gravity.toFixed(2)">
-        <div class="tooltip">🌙 Moon=1.62 · 🌍 Earth=9.81</div>
-      </div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px">
-        <button class="btn" style="margin:0;padding:5px 8px;font-size:0.62rem" onclick="setGrav(1.62)">Moon</button>
-        <button class="btn" style="margin:0;padding:5px 8px;font-size:0.62rem" onclick="setGrav(9.81)">Earth</button>
-      </div>
-      <hr class="divider" style="margin-top:8px">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 0;user-select:none">
-        <input type="checkbox" id="infiniteFuelChk"
-          onchange="infiniteFuel=this.checked;updateFuelUI()"
-          style="width:16px;height:16px;accent-color:var(--accent3);cursor:pointer">
-        <span style="font-size:0.72rem;color:var(--text)">∞ Infinite Fuel</span>
-        <span id="infiniteFuelBadge" style="display:none;font-size:0.6rem;background:rgba(57,255,20,0.15);color:var(--accent3);border:1px solid var(--accent3);border-radius:3px;padding:1px 5px">ON</span>
-      </label>
-      <div class="slider-row" style="margin-top:6px">
-        <div class="slider-label">
-          <span>Max Thrust (N/kg)</span>
-          <value id="maxThrustVal">11</value>
-        </div>
-        <input type="range" min="1" max="30" step="0.1" value="3.5" id="maxThrustSlider"
-          oninput="maxThrust=parseFloat(this.value);document.getElementById('maxThrustVal').textContent=maxThrust.toFixed(2)">
-      </div>
-      <div class="slider-row">
-        <div class="slider-label">
-          <span>Initial Altitude (m)</span>
-          <value id="initAltVal">500</value>
-        </div>
-        <input type="range" min="100" max="900" step="10" value="500" id="initAltSlider"
-          oninput="initAlt=parseFloat(this.value);document.getElementById('initAltVal').textContent=initAlt.toFixed(0)">
-      </div>
     </div>
 
     <button class="btn primary" onclick="resetSim()">▶ LAUNCH / RESET</button>
