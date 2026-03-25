@@ -7,3 +7,7 @@ Use **plotLander.py** to plot saved log file.
 
 TODO:
 * Variable mass option: Mass decrease should stop at empty mass m0
+* Inject error:  
+  * Noise in altitude sensor
+  * Noise in thrust
+  
