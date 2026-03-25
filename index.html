@@ -680,6 +680,9 @@
   function resize() {
     c.width = window.innerWidth;
     c.height = window.innerHeight;
+    // Fill background before drawing stars
+    ctx.fillStyle = '#050a14';
+    ctx.fillRect(0, 0, c.width, c.height);
     stars = Array.from({length:200}, () => ({
       x: Math.random()*c.width,
       y: Math.random()*c.height,
@@ -689,7 +692,7 @@
     draw();
   }
   function draw() {
-    ctx.clearRect(0,0,c.width,c.height);
+    ctx.fillRect(0, 0, c.width, c.height);
     stars.forEach(s => {
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
