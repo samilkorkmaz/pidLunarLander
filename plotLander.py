@@ -42,6 +42,8 @@ def plot_lander_telemetry(files):
     ax1.set_title('Lander Telemetry: Height, Velocity, & Thrust')
     ax1.set_ylim(bottom=0)
     ax1.grid(True, linestyle=':', alpha=0.6)
+    # 4m landing height
+    ax1.axhline(4, color='red', linestyle='--', linewidth=1.2, label='Landing height (4m)')    
     ax1.legend(loc='upper right', fontsize='x-small')
 
     # Formatting Middle Plot (Velocity)
@@ -50,7 +52,7 @@ def plot_lander_telemetry(files):
     ax2.axhline(0, color='black', linewidth=0.8, alpha=0.3)
     # 5m/s limit for safe landing velocity
     ax2.axhline(-5, color='red', linestyle='--', linewidth=1.2, label='Safe Speed Limit (5m/s)')
-    ax2.legend(loc='upper right', fontsize='x-small') # Added legend to show the limit label
+    ax2.legend(loc='upper right', fontsize='x-small')
 
     # Formatting Bottom Plot (Thrust)
     ax3.set_ylabel('Thrust (%)')
