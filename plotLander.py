@@ -52,7 +52,7 @@ def plot_lander_telemetry(files):
     ax2.axhline(0, color='black', linewidth=0.8, alpha=0.3)
     # 5m/s limit for safe landing velocity
     ax2.axhline(-5, color='red', linestyle='--', linewidth=1.2, label='Safe Speed Limit (5m/s)')
-    ax2.legend(loc='upper right', fontsize='x-small')
+    ax2.legend(loc='center right', fontsize='x-small')
 
     # Formatting Bottom Plot (Thrust)
     ax3.set_ylabel('Thrust (%)')
