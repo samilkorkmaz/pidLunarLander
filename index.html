@@ -202,6 +202,9 @@
   }
   input[type=range].orange::-webkit-slider-thumb { background: var(--accent2); box-shadow: 0 0 8px rgba(255,107,53,0.6); }
   input[type=range].green::-webkit-slider-thumb { background: var(--accent3); box-shadow: 0 0 8px rgba(57,255,20,0.6); }
+  input[type=range].warn::-webkit-slider-thumb { background: var(--warn); box-shadow: 0 0 8px rgba(255,204,0,0.6); }
+  input[type=range]:disabled { opacity: 0.35; cursor: not-allowed; }
+  input[type=range]:disabled::-webkit-slider-thumb { cursor: not-allowed; }
 
   /* THRUST CONTROL */
   .thrust-control {
@@ -211,7 +214,7 @@
     writing-mode: vertical-lr;
     direction: rtl;
     width: 4px;
-    height: 120px;
+    height: 60px;
     -webkit-appearance: none;
     background: var(--border);
     border-radius: 2px;
@@ -417,6 +420,67 @@
   .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
   .legend-item { display: flex; align-items: center; gap: 4px; font-size: 0.6rem; color: var(--dim); }
   .legend-dot { width: 8px; height: 3px; border-radius: 1px; }
+
+  /* First-order dynamics toggle */
+  .dynamics-toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .toggle-switch {
+    position: relative; width: 36px; height: 18px; cursor: pointer;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    position: absolute; inset: 0;
+    background: var(--border);
+    border-radius: 9px;
+    transition: background 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-track { background: rgba(0,212,255,0.4); border: 1px solid var(--accent); }
+  .toggle-knob {
+    position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px;
+    background: var(--dim);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .toggle-switch input:checked ~ .toggle-knob { transform: translateX(18px); background: var(--accent); box-shadow: 0 0 6px rgba(0,212,255,0.7); }
+  .dynamics-label { font-size: 0.7rem; color: var(--text); }
+  .dynamics-badge {
+    font-size: 0.58rem;
+    background: rgba(0,212,255,0.12);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    padding: 1px 5px;
+    display: none;
+  }
+  .dynamics-badge.on { display: inline; }
+
+  /* Thrust lag indicator bar */
+  .dual-bar-wrap {
+    width: 100%; height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: visible;
+    margin-top: 4px;
+    position: relative;
+  }
+  .dual-bar-commanded {
+    position: absolute; top: 0; left: 0;
+    height: 100%;
+    background: rgba(255,107,53,0.25);
+    border-radius: 4px;
+    transition: width 0.05s;
+  }
+  .dual-bar-realized {
+    position: absolute; top: 0; left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), #ff9a00);
+    border-radius: 4px;
+    box-shadow: 0 0 8px rgba(255,107,53,0.5);
+    transition: width 0.05s;
+  }
 </style>
 </head>
 <body>
@@ -454,8 +518,8 @@
       <value id="hdrVel" class="ok">0.0 m/s</value>
     </div>
     <div class="stat">
-      <label>Thrust</label>
-      <value id="hdrThrust" class="ok">0%</value>
+      <label>Cmd / Realized</label>
+      <value id="hdrThrust" class="ok">0% / 0%</value>
     </div>
     <div class="stat">
       <label>Fuel</label>
@@ -473,7 +537,7 @@
   <!-- LEFT PANEL -->
   <div class="left-panel">
 
-    <!-- Environment (moved to top) -->
+    <!-- Environment -->
     <div class="section">
       <div class="section-title">Environment</div>
       <div class="slider-row">
@@ -485,11 +549,7 @@
           oninput="gravity=parseFloat(this.value);document.getElementById('gravVal').textContent=gravity.toFixed(2)">
         <div class="tooltip">🌙 Moon=1.62 · 🌍 Earth=9.81</div>
       </div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px">
-        <button class="btn" style="margin:0;padding:5px 8px;font-size:0.62rem" onclick="setGrav(1.62)">Moon</button>
-        <button class="btn" style="margin:0;padding:5px 8px;font-size:0.62rem" onclick="setGrav(9.81)">Earth</button>
-      </div>
-      <hr class="divider" style="margin-top:8px">
+      <hr class="divider" style="margin-top:4px">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 0;user-select:none">
         <input type="checkbox" id="infiniteFuelChk"
           onchange="infiniteFuel=this.checked;updateFuelUI()"
@@ -500,7 +560,7 @@
       <div class="slider-row" style="margin-top:6px">
         <div class="slider-label">
           <span>Max Thrust (N/kg)</span>
-          <value id="maxThrustVal">11</value>
+          <value id="maxThrustVal">3.50</value>
         </div>
         <input type="range" min="1" max="30" step="0.1" value="3.5" id="maxThrustSlider"
           oninput="maxThrust=parseFloat(this.value);document.getElementById('maxThrustVal').textContent=maxThrust.toFixed(2)">
@@ -515,6 +575,50 @@
       </div>
     </div>
 
+    <!-- Thrust Dynamics -->
+    <div class="section">
+      <div class="section-title">Thrust Dynamics</div>
+      <div class="dynamics-toggle-row">
+        <span class="dynamics-label">First-Order Lag</span>
+        <span id="dynamicsBadge" class="dynamics-badge">ON</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="dynamicsChk" onchange="onDynamicsToggle()">
+          <div class="toggle-track"></div>
+          <div class="toggle-knob"></div>
+        </label>
+      </div>
+      
+      <div class="slider-row">
+        <div class="slider-label">
+          <span>K — Steady-state gain</span>
+          <value id="dynKVal">1.00</value>
+        </div>
+        <input type="range" class="warn" min="0.5" max="2.0" step="0.01" value="1.0" id="dynKSlider"
+          oninput="dynK=parseFloat(this.value);document.getElementById('dynKVal').textContent=dynK.toFixed(2)"
+          disabled>        
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-label">
+          <span>τ — Time constant (s)</span>
+          <value id="dynTauVal">0.5</value>
+        </div>
+        <!-- τ = 0.033s → reaches ~95% in ~0.1s (3τ ≈ 0.1s) -->
+        <input type="range" class="warn" min="0.005" max="2.0" step="0.001" value="0.5" id="dynTauSlider"
+          oninput="dynTau=parseFloat(this.value);document.getElementById('dynTauVal').textContent=dynTau.toFixed(3)"
+          disabled>        
+      </div>
+
+      <!-- Commanded vs Realized bar -->
+      <div style="font-size:0.63rem;color:var(--dim);margin-top:4px;margin-bottom:3px">
+        Commanded <span style="color:rgba(255,107,53,0.5)">░</span> vs Realized <span style="color:var(--accent2)">█</span>
+      </div>
+      <div class="dual-bar-wrap">
+        <div class="dual-bar-commanded" id="dualBarCmd" style="width:0%"></div>
+        <div class="dual-bar-realized" id="dualBarReal" style="width:0%"></div>
+      </div>
+    </div>
+
     <!-- Control Mode -->
     <div class="section">
       <div class="section-title">Control Mode</div>
@@ -523,21 +627,19 @@
         <button class="mode-btn" id="btn-p" onclick="setMode('P')">P only</button>
         <button class="mode-btn" id="btn-pd" onclick="setMode('PD')">PD</button>
         <button class="mode-btn" id="btn-pi" onclick="setMode('PI')">PI</button>
-        <button class="mode-btn" id="btn-pid" onclick="setMode('PID')" style="grid-column:span 2">PID (Full)</button>
-        <button class="mode-btn bangbang" id="btn-bangbang" onclick="setMode('bangbang')" style="grid-column:span 2">⚡ BANG-BANG (Optimal)</button>
+        <button class="mode-btn" id="btn-pid" onclick="setMode('PID')">PID</button>
+        <button class="mode-btn bangbang" id="btn-bangbang" onclick="setMode('bangbang')">BANG-BANG</button>
       </div>
     </div>
 
     <!-- Manual Thrust -->
     <div class="section" id="manualSection">
       <div class="section-title">Thrust Control</div>
-      <div class="thrust-control">
-        <div class="thrust-label">THRUST OUTPUT</div>
+      <div class="thrust-control">        
         <input type="range" id="thrustSlider" min="0" max="100" value="0"
           oninput="manualThrust = this.value/100">
         <div class="thrust-value"><span id="thrustPct">0</span>%</div>
-      </div>
-      <div class="thrust-bar-wrap"><div class="thrust-bar" id="thrustBar" style="width:0%"></div></div>
+      </div>      
       <div class="key-hint" style="margin-top:8px">
         <div class="key"><strong>▲</strong> Increase</div>
         <div class="key"><strong>▼</strong> Decrease</div>
@@ -590,7 +692,7 @@
       </div>
     </div>
 
-    <!-- Bang-Bang Info -->
+    <!-- Bang-Bang Info. Pontryagin's Minimum Principle: always thrust at 0% or 100%. Switch point computed from current velocity each frame -->
     <div class="section" id="bangbangSection" style="display:none">
       <div class="section-title">Bang-Bang Strategy</div>
       <div class="pid-formula" style="line-height:2">
@@ -600,12 +702,10 @@
       </div>
       <div class="pid-row"><label>Net brake accel</label><value id="bbNetAccel">—</value></div>
       <div class="pid-row"><label>Switch altitude</label><value id="bbSwitchAlt2" style="color:var(--warn)">—</value></div>
-      <div class="pid-row"><label>Phase</label><value id="bbPhase" style="color:var(--accent2)">FREEFALL</value></div>
-      <div class="tooltip" style="margin-top:4px">Pontryagin's Minimum Principle: always thrust at 0% or 100%. Switch point computed from current velocity each frame.</div>
+      <div class="pid-row"><label>Phase</label><value id="bbPhase" style="color:var(--accent2)">FREEFALL</value></div>      
     </div>
 
-    <button class="btn primary" onclick="resetSim()">▶ LAUNCH / RESET</button>
-    <button class="btn danger-btn" onclick="fuelDump()">⚡ FUEL DUMP (0%)</button>
+    <button class="btn primary" onclick="resetSim()">▶ LAUNCH / RESET</button>    
 
   </div>
 
@@ -639,6 +739,24 @@
     <div class="section">
       <div class="section-title">Thrust History</div>
       <canvas class="chart-canvas" id="thrustChart"></canvas>
+      <div class="legend" style="margin-top:6px">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:rgba(255,107,53,0.4)"></div>
+          <span>Commanded</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--accent2)"></div>
+          <span>Realized</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thrust telemetry -->
+    <div class="section">
+      <div class="section-title">Thrust Telemetry</div>
+      <div class="pid-row"><label>Commanded</label><value id="telThrustCmd" style="color:rgba(255,107,53,0.8)">—</value></div>
+      <div class="pid-row"><label>Realized</label><value id="telThrustReal" style="color:var(--accent2)">—</value></div>
+      <div class="pid-row"><label>Lag (cmd−real)</label><value id="telThrustLag" style="color:var(--warn)">—</value></div>
     </div>
 
     <!-- Telemetry numbers -->
@@ -680,7 +798,6 @@
   function resize() {
     c.width = window.innerWidth;
     c.height = window.innerHeight;
-    // Fill background before drawing stars
     ctx.fillStyle = '#050a14';
     ctx.fillRect(0, 0, c.width, c.height);
     stars = Array.from({length:200}, () => ({
@@ -715,6 +832,12 @@ let Kp = 1.0, Ki = 0.1, Kd = 2.0;
 let mode = 'manual';
 let manualThrust = 0;
 
+// First-order thrust dynamics
+let thrustDynamicsEnabled = false;
+let dynK   = 1.0;    // steady-state gain
+let dynTau = 0.5;  // time constant (s) — τ = 0.033 --> 3τ ≈ 0.1 s → 95% reached in ~0.1 s
+let realizedThrust = 0; // state variable: actual thrust delivered to physics
+
 // Simulation state
 let altitude, velocity, acceleration, fuel, elapsedTime;
 let integralErr = 0, prevError = 0;
@@ -723,11 +846,15 @@ let running = false;
 let landed = false;
 let crashed = false;
 
+// commanded thrust (output of controller / manual input, before actuator dynamics)
+let commandedThrust = 0;
+
 // History buffers
 const HIST = 300;
-let thrustHistory = [];
+let thrustCmdHistory  = [];
+let thrustRealHistory = [];
 
-// Data log (full resolution, every frame)
+// Data log
 let dataLog = [];
 
 /* ===================== CANVAS ===================== */
@@ -745,6 +872,17 @@ function resizeSim() {
 }
 window.addEventListener('resize', resizeSim);
 
+/* ===================== DYNAMICS TOGGLE ===================== */
+function onDynamicsToggle() {
+  thrustDynamicsEnabled = document.getElementById('dynamicsChk').checked;
+  document.getElementById('dynamicsBadge').classList.toggle('on', thrustDynamicsEnabled);
+  // Enable/disable sliders
+  document.getElementById('dynKSlider').disabled   = !thrustDynamicsEnabled;
+  document.getElementById('dynTauSlider').disabled = !thrustDynamicsEnabled;
+  // When disabled, realized = commanded instantly
+  if (!thrustDynamicsEnabled) realizedThrust = commandedThrust;
+}
+
 /* ===================== INIT ===================== */
 function resetSim() {
   altitude = initAlt;
@@ -754,10 +892,13 @@ function resetSim() {
   elapsedTime = 0;
   integralErr = 0; prevError = 0;
   pidPterm = 0; pidIterm = 0; pidDterm = 0; pidOutput = 0;
-  thrustHistory = [];
+  thrustCmdHistory  = [];
+  thrustRealHistory = [];
   dataLog = [];
   landed = false; crashed = false;
   manualThrust = 0;
+  commandedThrust = 0;
+  realizedThrust = 0;
   document.getElementById('thrustSlider').value = 0;
   document.getElementById('overlay').classList.add('hidden');
   running = true;
@@ -779,7 +920,6 @@ function setMode(m) {
   document.getElementById('pidSection').style.display = isPID ? '' : 'none';
   document.getElementById('bangbangSection').style.display = isBangBang ? '' : 'none';
 
-  // Show/hide param rows
   document.getElementById('kiRow').style.display = (m === 'PI' || m === 'PID') ? '' : 'none';
   document.getElementById('kdRow').style.display = (m === 'PD' || m === 'PID') ? '' : 'none';
 }
@@ -790,8 +930,6 @@ function setGrav(g) {
   document.getElementById('gravVal').textContent = g.toFixed(2);
 }
 
-function fuelDump() { fuel = 0; }
-
 function updateFuelUI() {
   document.getElementById('infiniteFuelBadge').style.display = infiniteFuel ? 'inline' : 'none';
 }
@@ -800,7 +938,6 @@ function updateFuelUI() {
 function computePID(dt) {
   const error = setpoint - altitude;
   integralErr += error * dt;
-  // anti-windup clamp
   integralErr = Math.max(-500, Math.min(500, integralErr));
   const derivative = (error - prevError) / dt;
   prevError = error;
@@ -814,9 +951,6 @@ function computePID(dt) {
   pidDterm = useD ? Kd * derivative : 0;
   pidOutput = pidPterm + pidIterm + pidDterm;
 
-  // Map PID output to thrust [0,1]
-  // We need thrust = gravity/maxThrust + correction to hover
-  // gravity/maxThrust gives the thrust fraction to hover
   const hoverFrac = gravity / maxThrust;
   let thrustFrac = hoverFrac + pidOutput / maxThrust;
   thrustFrac = Math.max(0, Math.min(1, thrustFrac));
@@ -824,57 +958,60 @@ function computePID(dt) {
 }
 
 /* ===================== BANG-BANG ===================== */
-// Landing target: altitude = 5m (to be at safe speed at 4m), impact speed ≤ 5 m/s
 const BB_TARGET_ALT  = 5;
-const BB_MAX_IMPACT  = 5;   // m/s — displayed constraint
-const BB_AIM_IMPACT  = 3.5; // m/s — internal aim point (safety margin for discrete timestep)
-const BB_SAFETY_M    = 2.0; // m   — extra altitude margin on switch point
+const BB_MAX_IMPACT  = 5;
+const BB_AIM_IMPACT  = 3.5;
+const BB_SAFETY_M    = 2.0;
 
 function computeBangBang() {
-  const netBrakeAccel = maxThrust - gravity; // upward decel when full thrust
-  if (netBrakeAccel <= 0) return 0; // can't brake — thrust too weak
+  const netBrakeAccel = maxThrust - gravity;
+  if (netBrakeAccel <= 0) return 0;
 
-  // Current downward speed (positive = falling)
-  const downSpeed = -velocity; // velocity is upward-positive
-
-  // Braking distance needed to reduce downSpeed to aim impact speed
-  // v² - u² = 2·a·d  →  d = (downSpeed² - aimSpeed²) / (2·netBrakeAccel)
-  // Note that you could calculate switching altitude once using this formula:
-  // h_switch = (v₀² - v_aim² + 2·g·h₀ + 2·netBrakeAccel·h_target) / (2·(g + netBrakeAccel))
-  // If anything perturbs the trajectory — a keyboard nudge in manual-hybrid mode, floating point drift, 
-  // or the sub-stepping near the ground — the pre-computed switch point becomes stale and the lander 
-  // either brakes too late (crash) or too early (hovers wastefully).
-  // The continuous recalculation below is essentially a closed-loop correction that makes the controller 
-  // robust to disturbances. Computing once is open-loop and fragile.
+  const downSpeed = -velocity;
   const aimSpeed = Math.min(BB_AIM_IMPACT, BB_MAX_IMPACT);
   const brakingDist = Math.max(0,
     (downSpeed * downSpeed - aimSpeed * aimSpeed) / (2 * netBrakeAccel)
   );
   const switchAlt = BB_TARGET_ALT + brakingDist + BB_SAFETY_M;
 
-  // Update info panel
-  document.getElementById('bbNetAccel').textContent = netBrakeAccel.toFixed(3) + ' m/s²';
+  document.getElementById('bbNetAccel').textContent  = netBrakeAccel.toFixed(3) + ' m/s²';
   document.getElementById('bbSwitchAlt').textContent  = switchAlt.toFixed(1);
   document.getElementById('bbSwitchAlt2').textContent = switchAlt.toFixed(1) + ' m';
 
   if (altitude <= switchAlt) {
-    // Braking phase — full thrust
     document.getElementById('bbPhase').textContent = 'BRAKING';
     document.getElementById('bbPhase').style.color = 'var(--accent)';
     return 1.0;
   } else {
-    // Freefall phase — zero thrust
     document.getElementById('bbPhase').textContent = 'FREEFALL';
     document.getElementById('bbPhase').style.color = 'var(--accent2)';
     return 0.0;
   }
 }
 
+/* ===================== FIRST-ORDER THRUST DYNAMICS =====================
+ *  Euler discretisation of:  τ·dy/dt = K·u − y
+ *  → y[n+1] = y[n] + (dt/τ) · (K·u[n] − y[n])
+ *
+ *  With K=1, τ=0.033 s:
+ *    63% reached after 1τ = 0.033 s
+ *    95% reached after 3τ ≈ 0.1  s   ← design requirement
+ *    99% reached after 5τ ≈ 0.165 s
+ * ===================================================================== */
+function applyThrustDynamics(commanded, dt) {
+  if (!thrustDynamicsEnabled) return commanded; // passthrough
+  // Euler step
+  realizedThrust += (dt / dynTau) * (dynK * commanded - realizedThrust);
+  // Clamp to physical limits
+  realizedThrust = Math.max(0, Math.min(1, realizedThrust));
+  return realizedThrust;
+}
+
 /* ===================== PHYSICS ===================== */
-const fuelConsumptionRate = 0.0001;
-let currentThrust = 0;
+let currentThrust = 0; // realized thrust used by physics each frame
 
 function physicsStep(elapsed) {
+  // 1. Determine commanded thrust from controller
   let thrustFrac;
   if (mode === 'manual') {
     thrustFrac = fuel > 0 ? manualThrust : 0;
@@ -883,14 +1020,24 @@ function physicsStep(elapsed) {
   } else {
     thrustFrac = fuel > 0 ? computePID(elapsed) : 0;
   }
-  currentThrust = thrustFrac;
-  if (!infiniteFuel) fuel = Math.max(0, fuel - thrustFrac * fuelConsumptionRate * elapsed * 60);
-  const thrustAccel = thrustFrac * maxThrust;
-  acceleration = thrustAccel - gravity; // upward positive
+  commandedThrust = thrustFrac;
+
+  // 2. Pass through actuator dynamics → realized thrust
+  const realized = applyThrustDynamics(commandedThrust, elapsed);
+  currentThrust = realized;
+
+  // 3. Fuel consumption based on realized thrust
+  if (!infiniteFuel) fuel = Math.max(0, fuel - realized * fuelConsumptionRate * elapsed * 60);
+
+  // 4. Physics uses realized thrust
+  const thrustAccel = realized * maxThrust;
+  acceleration = thrustAccel - gravity;
   velocity += acceleration * elapsed;
-  altitude += velocity * elapsed; // altitude increases upward
+  altitude += velocity * elapsed;
   if (altitude > 1200) { altitude = 1200; velocity = Math.min(velocity, 0); }
 }
+
+const fuelConsumptionRate = 0.0001;
 
 /* ===================== DRAW ===================== */
 function draw() {
@@ -898,7 +1045,6 @@ function draw() {
   const ctx = simCtx;
   ctx.clearRect(0, 0, W, H);
 
-  // Ground
   const groundY = H - 60;
   const gradient = ctx.createLinearGradient(0, groundY, 0, H);
   gradient.addColorStop(0, '#1a3a6a');
@@ -906,7 +1052,6 @@ function draw() {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, groundY, W, H - groundY);
 
-  // Ground line with glow
   ctx.strokeStyle = '#00d4ff';
   ctx.lineWidth = 2;
   ctx.shadowColor = '#00d4ff';
@@ -914,7 +1059,6 @@ function draw() {
   ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(W, groundY); ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // Landing pad
   const padW = 100, padX = W/2 - padW/2;
   ctx.fillStyle = 'rgba(0,212,255,0.15)';
   ctx.fillRect(padX, groundY - 4, padW, 4);
@@ -924,7 +1068,6 @@ function draw() {
   ctx.strokeRect(padX, groundY - 4, padW, 4);
   ctx.setLineDash([]);
 
-  // Setpoint line (auto modes)
   if (mode !== 'manual' && mode !== 'bangbang') {
     const spY = altToY(setpoint, H, groundY);
     ctx.strokeStyle = 'rgba(255,204,0,0.5)';
@@ -937,7 +1080,6 @@ function draw() {
     ctx.fillText(`TARGET: ${setpoint}m`, 8, spY - 4);
   }
 
-  // Bang-bang switch altitude line
   if (mode === 'bangbang') {
     const netBrakeAccel = maxThrust - gravity;
     if (netBrakeAccel > 0) {
@@ -958,16 +1100,12 @@ function draw() {
     }
   }
 
-  // Lander — offset upward by 18px so feet (local y=18) sit on the ground
   const FEET_OFFSET = 18;
   const landerX = W / 2;
   const landerY = altToY(altitude, H, groundY) - FEET_OFFSET;
   drawLander(ctx, landerX, landerY, currentThrust);
-
-  // Altitude ruler
   drawRuler(ctx, W, H, groundY);
 
-  // Velocity vector arrow
   if (Math.abs(velocity) > 0.5) {
     const vScale = 8;
     const arrowLen = Math.min(Math.abs(velocity) * vScale, 60);
@@ -1000,7 +1138,6 @@ function drawLander(ctx, x, y, thrustFrac) {
   ctx.save();
   ctx.translate(x, y);
 
-  // Thrust flame
   if (thrustFrac > 0.01) {
     const flameH = 20 + thrustFrac * 40 + Math.random() * 10;
     const flameGrad = ctx.createLinearGradient(0, 0, 0, flameH);
@@ -1019,7 +1156,6 @@ function drawLander(ctx, x, y, thrustFrac) {
     ctx.shadowBlur = 0;
   }
 
-  // Body
   ctx.strokeStyle = '#00d4ff';
   ctx.lineWidth = 2;
   ctx.shadowColor = '#00d4ff';
@@ -1030,7 +1166,6 @@ function drawLander(ctx, x, y, thrustFrac) {
   ctx.fill();
   ctx.stroke();
 
-  // Window
   ctx.beginPath();
   ctx.arc(0, -6, 8, 0, Math.PI*2);
   ctx.fillStyle = 'rgba(0,212,255,0.15)';
@@ -1039,18 +1174,14 @@ function drawLander(ctx, x, y, thrustFrac) {
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Legs
   ctx.strokeStyle = '#4a6a9a';
   ctx.lineWidth = 2;
   ctx.shadowBlur = 0;
-  // Left leg
   ctx.beginPath(); ctx.moveTo(-18, 8); ctx.lineTo(-30, 18); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(-30, 18); ctx.lineTo(-36, 18); ctx.stroke();
-  // Right leg
   ctx.beginPath(); ctx.moveTo(18, 8); ctx.lineTo(30, 18); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(30, 18); ctx.lineTo(36, 18); ctx.stroke();
 
-  // Altitude text
   ctx.shadowBlur = 0;
   ctx.fillStyle = 'rgba(200,224,255,0.8)';
   ctx.font = '11px Share Tech Mono';
@@ -1078,36 +1209,54 @@ function drawRuler(ctx, W, H, groundY) {
 
 /* ===================== CHARTS ===================== */
 function updateCharts() {
-  // Thrust chart
-  {
-    const c = thrustChartCanvas, ctx = thrustCtx;
-    const W = c.width, H = c.height;
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle = '#050a14';
-    ctx.fillRect(0,0,W,H);
+  const c = thrustChartCanvas, ctx = thrustCtx;
+  const W = c.width, H = c.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#050a14';
+  ctx.fillRect(0,0,W,H);
 
-    if (thrustHistory.length < 2) return;
-    const grad = ctx.createLinearGradient(0,0,0,H);
-    grad.addColorStop(0, 'rgba(255,107,53,0.8)');
-    grad.addColorStop(1, 'rgba(255,107,53,0.05)');
+  if (thrustCmdHistory.length < 2) return;
 
-    ctx.beginPath();
-    thrustHistory.forEach((v,i) => {
-      const x = (i/(HIST-1))*W;
-      const y = H - v*H;
-      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
-    });
-    ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
-    ctx.fillStyle = grad; ctx.fill();
-    ctx.strokeStyle = '#ff6b35'; ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    thrustHistory.forEach((v,i) => {
-      const x = (i/(HIST-1))*W;
-      const y = H - v*H;
-      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-  }
+  // Commanded — faint fill
+  ctx.beginPath();
+  thrustCmdHistory.forEach((v,i) => {
+    const x = (i/(HIST-1))*W;
+    const y = H - v*H;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+  ctx.fillStyle = 'rgba(255,107,53,0.12)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,107,53,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  thrustCmdHistory.forEach((v,i) => {
+    const x = (i/(HIST-1))*W;
+    const y = H - v*H;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Realized — solid fill
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, 'rgba(255,107,53,0.7)');
+  grad.addColorStop(1, 'rgba(255,107,53,0.05)');
+  ctx.beginPath();
+  thrustRealHistory.forEach((v,i) => {
+    const x = (i/(HIST-1))*W;
+    const y = H - v*H;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+  ctx.strokeStyle = '#ff6b35'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  thrustRealHistory.forEach((v,i) => {
+    const x = (i/(HIST-1))*W;
+    const y = H - v*H;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.stroke();
 }
 
 /* ===================== HUD ===================== */
@@ -1121,26 +1270,34 @@ function updateHUD() {
   document.getElementById('hdrAlt').className = altClass;
   document.getElementById('hdrVel').textContent = velocity.toFixed(2) + ' m/s';
   document.getElementById('hdrVel').className = velClass;
-  document.getElementById('hdrThrust').textContent = (currentThrust*100).toFixed(0) + '%';
+  document.getElementById('hdrThrust').textContent =
+    (commandedThrust*100).toFixed(0) + '% / ' + (currentThrust*100).toFixed(0) + '%';
   document.getElementById('hdrFuel').textContent = infiniteFuel ? '∞' : (fuel*100).toFixed(1) + '%';
   document.getElementById('hdrFuel').className = infiniteFuel ? 'ok' : fuelClass;
   document.getElementById('telFuel').textContent = infiniteFuel ? '∞ (unlimited)' : (fuel*100).toFixed(1) + '%';
-  // Manual thrust display
+
   if (mode === 'manual') {
     const pct = (manualThrust*100).toFixed(0);
-    document.getElementById('thrustPct').textContent = pct;
-    document.getElementById('thrustBar').style.width = pct + '%';
+    document.getElementById('thrustPct').textContent = pct;    
     document.getElementById('thrustSlider').value = manualThrust * 100;
   }
 
-  // Telemetry
+  // Dual bar
+  document.getElementById('dualBarCmd').style.width  = (commandedThrust*100) + '%';
+  document.getElementById('dualBarReal').style.width = (currentThrust*100) + '%';
+
+  // Thrust telemetry
+  const lag = commandedThrust - currentThrust;
+  document.getElementById('telThrustCmd').textContent  = (commandedThrust*100).toFixed(1) + '%';
+  document.getElementById('telThrustReal').textContent = (currentThrust*100).toFixed(1) + '%';
+  document.getElementById('telThrustLag').textContent  = (lag*100).toFixed(1) + '%';
+
   document.getElementById('telAlt').textContent = altitude.toFixed(2) + ' m';
   document.getElementById('telVel').textContent = velocity.toFixed(3) + ' m/s';
   document.getElementById('telAcc').textContent = acceleration.toFixed(3) + ' m/s²';
   document.getElementById('telTime').textContent = elapsedTime.toFixed(1) + ' s';
   document.getElementById('logCount').textContent = dataLog.length.toLocaleString() + ' frames recorded';
 
-  // PID internals
   if (mode !== 'manual' && mode !== 'bangbang') {
     const error = setpoint - altitude;
     document.getElementById('liveError').textContent = error.toFixed(3);
@@ -1209,23 +1366,22 @@ function mainLoop(ts) {
   lastPhysicsTime = ts;
 
   if (running && !landed && !crashed) {
-    // Check if we are in the "High Precision Zone"
     if (altitude < 10) {
-      const subSteps = 5; // Run 5 tiny steps instead of 1 big one
-      const subDt = elapsed / subSteps;      
+      const subSteps = 5;
+      const subDt = elapsed / subSteps;
       for (let i = 0; i < subSteps; i++) {
-        physicsStep(subDt); 
+        physicsStep(subDt);
       }
     } else {
       physicsStep(elapsed);
     }
     elapsedTime += elapsed;
 
-    // Push history
-    thrustHistory.push(currentThrust);
-    if (thrustHistory.length > HIST) { thrustHistory.shift(); }
+    thrustCmdHistory.push(commandedThrust);
+    thrustRealHistory.push(currentThrust);
+    if (thrustCmdHistory.length  > HIST) thrustCmdHistory.shift();
+    if (thrustRealHistory.length > HIST) thrustRealHistory.shift();
 
-    // Data log (every frame, full resolution)
     const logError = (mode === 'manual' || mode === 'bangbang') ? 0 : (setpoint - altitude);
     dataLog.push([
       elapsedTime.toFixed(4),
@@ -1234,14 +1390,14 @@ function mainLoop(ts) {
       altitude.toFixed(4),
       velocity.toFixed(4),
       logError.toFixed(4),
+      (commandedThrust * 100).toFixed(2),
       (currentThrust * 100).toFixed(2),
       (fuel * 100).toFixed(2)
     ]);
 
-    // Check landing
     if (altitude <= 4) {
       altitude = 4;
-      const impactSpeed = Math.abs(velocity);      
+      const impactSpeed = Math.abs(velocity);
       velocity = 0;
       running = false;
       if (impactSpeed <= 5) {
@@ -1253,7 +1409,7 @@ function mainLoop(ts) {
         showOverlay(false, impactSpeed);
         showFlash('crashFlash');
       }
-    }    
+    }
   }
 
   if (simCanvas.width > 0) {
@@ -1271,7 +1427,7 @@ function downloadLog() {
     alert('No data recorded yet. Start the simulation first.');
     return;
   }
-  const header = '%time(s)\tmode\tgravity(m/s2)\theight(m)\tvelocity(m/s)\terror(m)\tthrust_command(%)\tfuel(%)';
+  const header = '%time(s)\tmode\tgravity(m/s2)\theight(m)\tvelocity(m/s)\terror(m)\tthrust_commanded(%)\tthrust_realized(%)\tfuel(%)';
   const rows = dataLog.map(r => r.join('\t'));
   const content = [header, ...rows].join('\n');
   const blob = new Blob([content], { type: 'text/plain' });
@@ -1287,7 +1443,6 @@ function downloadLog() {
 window.addEventListener('load', () => {
   resizeSim();
   resetSim();
-  // start with infinite fuel on
   document.getElementById('infiniteFuelChk').checked = true;
   updateFuelUI();
   requestAnimationFrame(mainLoop);
