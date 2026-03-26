@@ -1,6 +1,9 @@
+// helper $ to shorten getElementById calls
+const $ = (id) => document.getElementById(id);
+
 /* ===================== STARFIELD ===================== */
 (function() {
-  const c = document.getElementById('stars');
+  const c = $('stars');
   const ctx = c.getContext('2d');
   let stars = [];
   function resize() {
@@ -28,6 +31,8 @@
   window.addEventListener('resize', resize);
   resize();
 })();
+
+
 
 /* ===================== SIM STATE ===================== */
 let gravity = 1.62;
@@ -66,13 +71,13 @@ let thrustRealHistory = [];
 let dataLog = [];
 
 /* ===================== CANVAS ===================== */
-const simCanvas = document.getElementById('sim');
+const simCanvas = $('sim');
 const simCtx = simCanvas.getContext('2d');
-const thrustChartCanvas = document.getElementById('thrustChart');
+const thrustChartCanvas = $('thrustChart');
 const thrustCtx = thrustChartCanvas.getContext('2d');
 
 function resizeSim() {
-  const wrap = document.getElementById('canvasWrap');
+  const wrap = $('canvasWrap');
   simCanvas.width = wrap.clientWidth;
   simCanvas.height = wrap.clientHeight;
   thrustChartCanvas.width = thrustChartCanvas.offsetWidth;
@@ -82,10 +87,10 @@ window.addEventListener('resize', resizeSim);
 
 /* ===================== DYNAMICS TOGGLE ===================== */
 function onDynamicsToggle() {
-  thrustDynamicsEnabled = document.getElementById('dynamicsChk').checked;
-  document.getElementById('dynamicsBadge').classList.toggle('on', thrustDynamicsEnabled);
-  document.getElementById('dynKSlider').disabled   = !thrustDynamicsEnabled;
-  document.getElementById('dynTauSlider').disabled = !thrustDynamicsEnabled;
+  thrustDynamicsEnabled = $('dynamicsChk').checked;
+  $('dynamicsBadge').classList.toggle('on', thrustDynamicsEnabled);
+  $('dynKSlider').disabled   = !thrustDynamicsEnabled;
+  $('dynTauSlider').disabled = !thrustDynamicsEnabled;
   if (!thrustDynamicsEnabled) realizedThrust = commandedThrust;
 }
 
@@ -105,8 +110,8 @@ function resetSim() {
   manualThrust = 0;
   commandedThrust = 0;
   realizedThrust = 0;
-  document.getElementById('thrustSlider').value = 0;
-  document.getElementById('overlay').classList.add('hidden');
+  $('thrustSlider').value = 0;
+  $('overlay').classList.add('hidden');
   running = true;
 }
 
@@ -114,30 +119,30 @@ function resetSim() {
 function setMode(m) {
   mode = m;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('btn-'+m.toLowerCase()).classList.add('active');
-  document.getElementById('hdrMode').textContent = m.toUpperCase();
-  document.getElementById('hdrMode').style.color =
+  $('btn-'+m.toLowerCase()).classList.add('active');
+  $('hdrMode').textContent = m.toUpperCase();
+  $('hdrMode').style.color =
     m === 'manual' ? 'var(--accent2)' : m === 'bangbang' ? 'var(--warn)' : 'var(--accent)';
 
   const isManual = m === 'manual';
   const isBangBang = m === 'bangbang';
   const isPID = !isManual && !isBangBang;
-  document.getElementById('manualSection').style.display = isManual ? '' : 'none';
-  document.getElementById('pidSection').style.display = isPID ? '' : 'none';
-  document.getElementById('bangbangSection').style.display = isBangBang ? '' : 'none';
+  $('manualSection').style.display = isManual ? '' : 'none';
+  $('pidSection').style.display = isPID ? '' : 'none';
+  $('bangbangSection').style.display = isBangBang ? '' : 'none';
 
-  document.getElementById('kiRow').style.display = (m === 'PI' || m === 'PID') ? '' : 'none';
-  document.getElementById('kdRow').style.display = (m === 'PD' || m === 'PID') ? '' : 'none';
+  $('kiRow').style.display = (m === 'PI' || m === 'PID') ? '' : 'none';
+  $('kdRow').style.display = (m === 'PD' || m === 'PID') ? '' : 'none';
 }
 
 function setGrav(g) {
   gravity = g;
-  document.getElementById('gravSlider').value = g;
-  document.getElementById('gravVal').textContent = g.toFixed(2);
+  $('gravSlider').value = g;
+  $('gravVal').textContent = g.toFixed(2);
 }
 
 function updateFuelUI() {
-  document.getElementById('infiniteFuelBadge').style.display = infiniteFuel ? 'inline' : 'none';
+  $('infiniteFuelBadge').style.display = infiniteFuel ? 'inline' : 'none';
 }
 
 /* ===================== PID ===================== */
@@ -190,17 +195,17 @@ function computeBangBang() {
   );
   const switchAlt = BB_TARGET_ALT + brakingDist + BB_SAFETY_M;
 
-  document.getElementById('bbNetAccel').textContent  = netBrakeAccel.toFixed(3) + ' m/s²';
-  document.getElementById('bbSwitchAlt').textContent  = switchAlt.toFixed(1);
-  document.getElementById('bbSwitchAlt2').textContent = switchAlt.toFixed(1) + ' m';
+  $('bbNetAccel').textContent  = netBrakeAccel.toFixed(3) + ' m/s²';
+  $('bbSwitchAlt').textContent  = switchAlt.toFixed(1);
+  $('bbSwitchAlt2').textContent = switchAlt.toFixed(1) + ' m';
 
   if (altitude <= switchAlt) {
-    document.getElementById('bbPhase').textContent = 'BRAKING';
-    document.getElementById('bbPhase').style.color = 'var(--accent)';
+    $('bbPhase').textContent = 'BRAKING';
+    $('bbPhase').style.color = 'var(--accent)';
     return 1.0;
   } else {
-    document.getElementById('bbPhase').textContent = 'FREEFALL';
-    document.getElementById('bbPhase').style.color = 'var(--accent2)';
+    $('bbPhase').textContent = 'FREEFALL';
+    $('bbPhase').style.color = 'var(--accent2)';
     return 0.0;
   }
 }
@@ -469,57 +474,57 @@ function updateHUD() {
   const altClass = altitude > 50 ? 'ok' : altitude > 10 ? 'warn' : 'danger';
   const fuelClass = fuel > 0.5 ? 'ok' : fuel > 0.2 ? 'warn' : 'danger';
 
-  document.getElementById('hdrAlt').textContent = altitude.toFixed(1) + ' m';
-  document.getElementById('hdrAlt').className = altClass;
-  document.getElementById('hdrVel').textContent = velocity.toFixed(2) + ' m/s';
-  document.getElementById('hdrVel').className = velClass;
-  document.getElementById('hdrThrust').textContent =
+  $('hdrAlt').textContent = altitude.toFixed(1) + ' m';
+  $('hdrAlt').className = altClass;
+  $('hdrVel').textContent = velocity.toFixed(2) + ' m/s';
+  $('hdrVel').className = velClass;
+  $('hdrThrust').textContent =
     (commandedThrust*100).toFixed(0) + '% / ' + (currentThrust*100).toFixed(0) + '%';
-  document.getElementById('hdrFuel').textContent = infiniteFuel ? '∞' : (fuel*100).toFixed(1) + '%';
-  document.getElementById('hdrFuel').className = infiniteFuel ? 'ok' : fuelClass;
-  document.getElementById('telFuel').textContent = infiniteFuel ? '∞ (unlimited)' : (fuel*100).toFixed(1) + '%';
+  $('hdrFuel').textContent = infiniteFuel ? '∞' : (fuel*100).toFixed(1) + '%';
+  $('hdrFuel').className = infiniteFuel ? 'ok' : fuelClass;
+  $('telFuel').textContent = infiniteFuel ? '∞ (unlimited)' : (fuel*100).toFixed(1) + '%';
 
   if (mode === 'manual') {
     const pct = (manualThrust*100).toFixed(0);
-    document.getElementById('thrustPct').textContent = pct;
-    document.getElementById('thrustSlider').value = manualThrust * 100;
+    $('thrustPct').textContent = pct;
+    $('thrustSlider').value = manualThrust * 100;
   }
 
-  document.getElementById('dualBarCmd').style.width  = (commandedThrust*100) + '%';
-  document.getElementById('dualBarReal').style.width = (currentThrust*100) + '%';
+  $('dualBarCmd').style.width  = (commandedThrust*100) + '%';
+  $('dualBarReal').style.width = (currentThrust*100) + '%';
 
   const lag = commandedThrust - currentThrust;
-  document.getElementById('telThrustCmd').textContent  = (commandedThrust*100).toFixed(1) + '%';
-  document.getElementById('telThrustReal').textContent = (currentThrust*100).toFixed(1) + '%';
-  document.getElementById('telThrustLag').textContent  = (lag*100).toFixed(1) + '%';
+  $('telThrustCmd').textContent  = (commandedThrust*100).toFixed(1) + '%';
+  $('telThrustReal').textContent = (currentThrust*100).toFixed(1) + '%';
+  $('telThrustLag').textContent  = (lag*100).toFixed(1) + '%';
 
-  document.getElementById('telAlt').textContent = altitude.toFixed(2) + ' m';
-  document.getElementById('telVel').textContent = velocity.toFixed(3) + ' m/s';
-  document.getElementById('telAcc').textContent = acceleration.toFixed(3) + ' m/s²';
-  document.getElementById('telTime').textContent = elapsedTime.toFixed(1) + ' s';
-  document.getElementById('logCount').textContent = dataLog.length.toLocaleString() + ' frames recorded';
+  $('telAlt').textContent = altitude.toFixed(2) + ' m';
+  $('telVel').textContent = velocity.toFixed(3) + ' m/s';
+  $('telAcc').textContent = acceleration.toFixed(3) + ' m/s²';
+  $('telTime').textContent = elapsedTime.toFixed(1) + ' s';
+  $('logCount').textContent = dataLog.length.toLocaleString() + ' frames recorded';
 
   if (mode !== 'manual' && mode !== 'bangbang') {
     const error = setpoint - altitude;
-    document.getElementById('liveError').textContent = error.toFixed(3);
-    document.getElementById('livePterm').textContent = pidPterm.toFixed(4);
-    document.getElementById('liveIterm').textContent = pidIterm.toFixed(4);
-    document.getElementById('liveDterm').textContent = pidDterm.toFixed(4);
-    document.getElementById('liveOutput').textContent = pidOutput.toFixed(4);
+    $('liveError').textContent = error.toFixed(3);
+    $('livePterm').textContent = pidPterm.toFixed(4);
+    $('liveIterm').textContent = pidIterm.toFixed(4);
+    $('liveDterm').textContent = pidDterm.toFixed(4);
+    $('liveOutput').textContent = pidOutput.toFixed(4);
     const clamped = Math.max(0, Math.min(1, (gravity/maxThrust) + pidOutput/maxThrust));
-    document.getElementById('liveClamped').textContent = (clamped*100).toFixed(1) + '%';
+    $('liveClamped').textContent = (clamped*100).toFixed(1) + '%';
   } else {
     ['liveError','livePterm','liveIterm','liveDterm','liveOutput','liveClamped'].forEach(id => {
-      document.getElementById(id).textContent = 'N/A';
+      $(id).textContent = 'N/A';
     });
   }
 }
 
 /* ===================== OVERLAY ===================== */
 function showOverlay(success, speed) {
-  const ov = document.getElementById('overlay');
-  const title = document.getElementById('overlayTitle');
-  const msg = document.getElementById('overlayMsg');
+  const ov = $('overlay');
+  const title = $('overlayTitle');
+  const msg = $('overlayMsg');
   ov.classList.remove('hidden');
   if (success) {
     title.textContent = '✓ LANDED';
@@ -533,7 +538,7 @@ function showOverlay(success, speed) {
 }
 
 function showFlash(id) {
-  const el = document.getElementById(id);
+  const el = $(id);
   el.classList.remove('show');
   void el.offsetWidth;
   el.classList.add('show');
@@ -644,7 +649,7 @@ function downloadLog() {
 window.addEventListener('load', () => {
   resizeSim();
   resetSim();
-  document.getElementById('infiniteFuelChk').checked = true;
+  $('infiniteFuelChk').checked = true;
   updateFuelUI();
   requestAnimationFrame(mainLoop);
 });
