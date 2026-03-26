@@ -4,8 +4,9 @@ import numpy as np
 
 # List of your log files
 file_list = [
-    'pid_lander_log_2026-03-25-09-19-02.txt',    
-    'pid_lander_log_2026-03-25-12-13-54.txt'
+    'pid_lander_log_2026-03-26-07-59-26.txt',
+    #'pid_lander_log_2026-03-25-12-38-34.txt',
+    #'pid_lander_log_2026-03-25-12-42-13.txt'
 ]
 
 def plot_lander_telemetry(files):
@@ -30,9 +31,11 @@ def plot_lander_telemetry(files):
             ax2.plot(df['time(s)'], df['velocity(m/s)'], 
                      color=colors[i], linewidth=1.5)
             
-            # 3. Thrust Command Plot
-            ax3.plot(df['time(s)'], df['thrust_command()'], # Note that since we removed % from column names, we use 'thrust_command()' instead of 'thrust_command(%)'
-                     color=colors[i], linewidth=1.5, alpha=0.8)
+            # 3. Thrust Plot
+            ax3.plot(df['time(s)'], df['thrust_commanded()'], # Note that since we removed % from column names, we use 'thrust_command()' instead of 'thrust_command(%)'
+                     color=colors[i], linewidth=1.5, alpha=0.8, label="Commanded")
+            ax3.plot(df['time(s)'], df['thrust_realized()'], 
+             color=colors[i], linewidth=1.2, linestyle='--', alpha=0.9, label="Realized")
             
         except Exception as e:
             print(f"Error processing {file_path}: {e}")
@@ -59,6 +62,7 @@ def plot_lander_telemetry(files):
     ax3.set_xlabel('Time (s)')
     ax3.set_ylim(-5, 105) # Thrust is usually 0-100%
     ax3.grid(True, linestyle=':', alpha=0.6)
+    ax3.legend(loc='upper right', fontsize='x-small')
 
     plt.tight_layout()
     plt.show()
