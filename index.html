@@ -839,6 +839,13 @@ function computeBangBang() {
 
   // Braking distance needed to reduce downSpeed to aim impact speed
   // v² - u² = 2·a·d  →  d = (downSpeed² - aimSpeed²) / (2·netBrakeAccel)
+  // Note that you could calculate switching altitude once using this formula:
+  // h_switch = (v₀² - v_aim² + 2·g·h₀ + 2·netBrakeAccel·h_target) / (2·(g + netBrakeAccel))
+  // If anything perturbs the trajectory — a keyboard nudge in manual-hybrid mode, floating point drift, 
+  // or the sub-stepping near the ground — the pre-computed switch point becomes stale and the lander 
+  // either brakes too late (crash) or too early (hovers wastefully).
+  // The continuous recalculation below is essentially a closed-loop correction that makes the controller 
+  // robust to disturbances. Computing once is open-loop and fragile.
   const aimSpeed = Math.min(BB_AIM_IMPACT, BB_MAX_IMPACT);
   const brakingDist = Math.max(0,
     (downSpeed * downSpeed - aimSpeed * aimSpeed) / (2 * netBrakeAccel)
