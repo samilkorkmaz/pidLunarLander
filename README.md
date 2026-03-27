@@ -1,9 +1,14 @@
 # pidLunarLander
-PID demo with lunar lander game
+PID and Bang-Bang demo with lunar lander game
 
 Game live on https://samilkorkmaz.github.io/pidLunarLander/
 
-Use **plotLander.py** to plot saved log file.
+<img width="475" height="289" alt="image" src="https://github.com/user-attachments/assets/ba08aea8-4231-48a0-94fb-97560383320a" />
+
+
+Use **plotLander.py** to plot saved log file:
+
+<img width="388" height="287" alt="image" src="https://github.com/user-attachments/assets/8697a342-049d-49da-9fed-dd0cb3facda0" />
 
 TODO:
 * Split into 1. Physics engine, 2. Controller, 3. Actuator model, 4. Renderer
