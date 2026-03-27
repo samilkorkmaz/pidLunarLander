@@ -5,8 +5,7 @@ Game live on https://samilkorkmaz.github.io/pidLunarLander/
 
 <img width="475" height="289" alt="image" src="https://github.com/user-attachments/assets/ba08aea8-4231-48a0-94fb-97560383320a" />
 
-
-Use **plotLander.py** to plot saved log file:
+Use **plotLander.py** to plot saved log files:
 
 <img width="388" height="287" alt="image" src="https://github.com/user-attachments/assets/8697a342-049d-49da-9fed-dd0cb3facda0" />
 
