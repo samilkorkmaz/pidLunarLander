@@ -10,7 +10,7 @@ Use **plotLander.py** to plot saved log files:
 <img width="388" height="287" alt="image" src="https://github.com/user-attachments/assets/8697a342-049d-49da-9fed-dd0cb3facda0" />
 
 TODO:
-* Add another control method: PD for outer altitude loop, PID for inner velocity loop
+* Add another control method: PD for outer altitude loop, PID for inner velocity loop. Start with speed setpoint of 20m/s and after transition altitude of 50m, reduce it to 2m/s.
 * Use Apollo's three-phase approach
 * Use Powered Descent Guidance (Model Predictive Control - MPC)
 * Split code into 1. Physics engine, 2. Controller, 3. Actuator model, 4. Renderer
