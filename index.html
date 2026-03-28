@@ -68,9 +68,8 @@
           <span>Gravity (m/s²)</span>
           <value id="gravVal">1.62</value>
         </div>
-        <input type="range" min="0.1" max="20" step="0.1" value="1.62" id="gravSlider"
+        <input type="range" title="🌙 Moon=1.62 · 🌍 Earth=9.81" min="0.1" max="20" step="0.1" value="1.62" id="gravSlider"
           oninput="gravity=parseFloat(this.value);document.getElementById('gravVal').textContent=gravity.toFixed(2)">
-        <div class="tooltip">🌙 Moon=1.62 · 🌍 Earth=9.81</div>
       </div>
       <hr class="divider" style="margin-top:4px">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 0;user-select:none">
@@ -149,7 +148,7 @@
         <button class="mode-btn" id="btn-pd" onclick="setMode('PD')">PD</button>
         <button class="mode-btn" id="btn-pi" onclick="setMode('PI')">PI</button>
         <button class="mode-btn" id="btn-pid" onclick="setMode('PID')">PID</button>
-        <button class="mode-btn bangbang" id="btn-bangbang" onclick="setMode('bangbang')">BANG-BANG</button>
+        <button class="mode-btn bangbang" title="Optimal control law when there are no disturbances" id="btn-bangbang" onclick="setMode('bangbang')">BANG-BANG</button>
       </div>
     </div>
 
