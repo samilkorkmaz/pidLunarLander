@@ -11,7 +11,9 @@ Use **plotLander.py** to plot saved log files:
 
 TODO:
 * Add another control method: PD for outer altitude loop, PID for inner velocity loop
-* Split into 1. Physics engine, 2. Controller, 3. Actuator model, 4. Renderer
+* Use Apollo's three-phase approach
+* Use Powered Descent Guidance (Model Predictive Control - MPC)
+* Split code into 1. Physics engine, 2. Controller, 3. Actuator model, 4. Renderer
 * In Bang-Bang, calculate switching altitude once instead of continuously --> fragile, see comment in code
 * Variable mass option: If fuel is infinite, mass decrease should stop at a predefined empty vehile mass m0
 * Inject error:  
