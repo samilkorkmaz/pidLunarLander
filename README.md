@@ -10,7 +10,6 @@ Use **plotLander.py** to plot saved log files:
 <img width="388" height="287" alt="image" src="https://github.com/user-attachments/assets/8697a342-049d-49da-9fed-dd0cb3facda0" />
 
 TODO:
-* Why is PD and PID behaving differently despite their difference being Ki=0.1? For example, PD starts thurst before descending to 400m while PID does not? Is there an error in code?
 * Split into 1. Physics engine, 2. Controller, 3. Actuator model, 4. Renderer
 * In Bang-Bang, calculate switching altitude once instead of continuously --> fragile, see comment in code
 * Variable mass option: If fuel is infinite, mass decrease should stop at a predefined empty vehile mass m0
