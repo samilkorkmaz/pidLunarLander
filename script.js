@@ -118,6 +118,8 @@ function resetSim() {
 /* ===================== MODE ===================== */
 function setMode(m) {
   mode = m;
+  integralErr = 0;
+  prevError = 0;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
   $('btn-'+m.toLowerCase()).classList.add('active');
   $('hdrMode').textContent = m.toUpperCase();
@@ -148,14 +150,15 @@ function updateFuelUI() {
 /* ===================== PID ===================== */
 function computePID(dt) {
   const error = setpoint - altitude;
-  integralErr += error * dt;
-  integralErr = Math.max(-500, Math.min(500, integralErr));
-  const derivative = (error - prevError) / dt;
-  prevError = error;
-
-  const useP = (mode === 'P' || mode === 'PD' || mode === 'PI' || mode === 'PID');
+  const useP = (mode === 'P' || mode === 'PD' || mode === 'PI' || mode === 'PID');  
   const useI = (mode === 'PI' || mode === 'PID');
   const useD = (mode === 'PD' || mode === 'PID');
+  if (useI) {
+    integralErr += error * dt;
+    integralErr = Math.max(-500, Math.min(500, integralErr));
+  }
+  const derivative = (error - prevError) / dt;
+  prevError = error;
 
   pidPterm = useP ? Kp * error : 0;
   pidIterm = useI ? Ki * integralErr : 0;
