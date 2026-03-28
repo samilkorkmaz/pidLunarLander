@@ -153,7 +153,7 @@ function computePID(dt) {
   const useP = (mode === 'P' || mode === 'PD' || mode === 'PI' || mode === 'PID');  
   const useI = (mode === 'PI' || mode === 'PID');
   const useD = (mode === 'PD' || mode === 'PID');
-  if (useI) {
+  if (useI && error > 0) { // Only accumulate when lander is below setpoint because I can only apply thrust in up direction. Since I can't push the lander down (no downward thrust), the integral should not accumulate "error" for a situation I have no authority to correct.
     integralErr += error * dt;
     integralErr = Math.max(-500, Math.min(500, integralErr));
   }
