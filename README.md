@@ -11,6 +11,9 @@ Use **plotLander.py** to plot saved log files:
 
 TODO:
 * Add another control method: PD for outer altitude loop, PID for inner velocity loop. Start with speed setpoint of 20m/s and after transition altitude of 50m, reduce it to 2m/s. Similar to Apollo's three-phase approach.
+* Start from horizontal alignment with initial horizontal velocity:
+<img width="449" height="408" alt="image" src="https://github.com/user-attachments/assets/4f1f789d-6659-437d-9478-d6476c460f89" />
+
 * Use Powered Descent Guidance (Model Predictive Control - MPC)
 * Split code into 1. Physics engine, 2. Controller, 3. Actuator model, 4. Renderer
 * In Bang-Bang, calculate switching altitude once instead of continuously --> fragile, see comment in code
