@@ -146,8 +146,8 @@
         <button class="mode-btn manual active" id="btn-manual" onclick="setMode('manual')">MANUAL</button>
         <button class="mode-btn" id="btn-p" onclick="setMode('P')">P only</button>
         <button class="mode-btn" id="btn-pd" onclick="setMode('PD')">PD</button>
-        <button class="mode-btn" id="btn-pi" onclick="setMode('PI')">PI</button>
         <button class="mode-btn" id="btn-pid" onclick="setMode('PID')">PID</button>
+        <button class="mode-btn" id="btn-cascade" onclick="setMode('cascade')">CASCADE (PD+PID)</button>
         <button class="mode-btn bangbang" title="Optimal control law when there are no disturbances" id="btn-bangbang" onclick="setMode('bangbang')">BANG-BANG</button>
       </div>
     </div>
@@ -209,6 +209,61 @@
         <input type="range" class="orange" min="0" max="10" step="0.1" value="2.0" id="kdSlider"
           oninput="Kd=parseFloat(this.value);document.getElementById('kdVal').textContent=Kd.toFixed(2)">
         <div class="tooltip">Damps oscillation. Higher → smoother, can be sluggish.</div>
+      </div>
+    </div>
+
+    <!-- Cascade (PD+PID) Settings -->
+    <div class="section" id="cascadeSection" style="display:none">
+      <div class="section-title">Cascade (PD+PID) Parameters</div>
+      <div class="setpoint-row">
+        <label>Target altitude (m):</label>
+        <input type="number" id="setpointInput" value="400" min="0" max="900" step="5"
+          oninput="setpoint = parseFloat(this.value)||10">
+      </div>
+
+      <div class="slider-row" id="kpRow_outer">
+        <div class="slider-label">
+          <span>Kp_outer</span>
+          <value id="kpVal_outer">0.05</value>
+        </div>
+        <input type="range" min="0" max="5" step="0.05" value="0.05" id="kpSlider_outer"
+          oninput="Kp_outer=parseFloat(this.value);document.getElementById('kpVal_outer').textContent=Kp_outer.toFixed(2)">
+      </div>
+
+      <div class="slider-row" id="kdRow_outer">
+        <div class="slider-label">
+          <span>Kd_outer</span>
+          <value id="kdVal_outer">0.10</value>
+        </div>
+        <input type="range" min="0" max="5" step="0.05" value="0.1" id="kdSlider_outer"
+          oninput="Kd_outer=parseFloat(this.value);document.getElementById('kdVal_outer').textContent=Kd_outer.toFixed(2)">
+      </div>
+
+      <div class="slider-row" id="kpRow_inner">
+        <div class="slider-label">
+          <span>Kp_inner</span>
+          <value id="kpVal_inner">1.50</value>
+        </div>
+        <input type="range" min="0" max="5" step="0.05" value="1.5" id="kpSlider_inner"
+          oninput="Kp_inner=parseFloat(this.value);document.getElementById('kpVal_inner').textContent=Kp_inner.toFixed(2)">
+      </div>
+
+      <div class="slider-row" id="kiRow_inner">
+        <div class="slider-label">
+          <span>Ki_inner</span>
+          <value id="kiVal_inner">0.30</value>
+        </div>
+        <input type="range" class="green" min="0" max="1" step="0.005" value="0.3" id="kiSlider_inner"
+          oninput="Ki_inner=parseFloat(this.value);document.getElementById('kiVal_inner').textContent=Ki_inner.toFixed(3)">
+      </div>
+
+      <div class="slider-row" id="kdRow_inner">
+        <div class="slider-label">
+          <span>Kd_inner</span>
+          <value id="kdVal_inner">0.50</value>
+        </div>
+        <input type="range" class="orange" min="0" max="10" step="0.1" value="0.5" id="kdSlider_inner"
+          oninput="Kd_inner=parseFloat(this.value);document.getElementById('kdVal_inner').textContent=Kd_inner.toFixed(2)">
       </div>
     </div>
 

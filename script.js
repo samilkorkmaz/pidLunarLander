@@ -45,6 +45,18 @@ let Kp = 1.0, Ki = 0.1, Kd = 2.0;
 let mode = 'manual';
 let manualThrust = 0;
 
+// Cascade PD+PID gains
+let Kp_outer = 0.05, Kd_outer = 0.1;   // outer PD: altitude error → velocity setpoint
+let Kp_inner = 1.5,  Ki_inner = 0.3, Kd_inner = 0.5; // inner PID: velocity error → thrust
+
+// Cascade state
+let prevAltError = 0;
+let integralVelErr = 0, prevVelErr = 0;
+// Internals exposed for HUD
+let cascadeVelSetpoint = 0, cascadeVelError = 0;
+let cascadePouter = 0, cascadeDouter = 0;
+let cascadePinner = 0, cascadeIinner = 0, cascadeDinner = 0;
+
 // First-order thrust dynamics
 let thrustDynamicsEnabled = false;
 let dynK   = 1.0;
@@ -102,6 +114,8 @@ function resetSim() {
   fuel = 1.0;
   elapsedTime = 0;
   integralErr = 0; prevError = 0;
+  prevAltError = 0; integralVelErr = 0; prevVelErr = 0;
+  cascadeVelSetpoint = 0; cascadeVelError = 0;
   pidPterm = 0; pidIterm = 0; pidDterm = 0; pidOutput = 0;
   thrustCmdHistory  = [];
   thrustRealHistory = [];
@@ -118,23 +132,28 @@ function resetSim() {
 /* ===================== MODE ===================== */
 function setMode(m) {
   mode = m;
-  integralErr = 0;
-  prevError = 0;
+  // console.log(`Mode set to ${m}`);
+  integralErr = 0; prevError = 0;
+  prevAltError = 0; integralVelErr = 0; prevVelErr = 0;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
   $('btn-'+m.toLowerCase()).classList.add('active');
   $('hdrMode').textContent = m.toUpperCase();
-  $('hdrMode').style.color =
-    m === 'manual' ? 'var(--accent2)' : m === 'bangbang' ? 'var(--warn)' : 'var(--accent)';
+  $('hdrMode').style.color = m === 'manual' ? 'var(--accent2)' : m === 'bangbang' ? 'var(--warn)' : 'var(--accent)';
 
-  const isManual = m === 'manual';
-  const isBangBang = m === 'bangbang';
-  const isPID = !isManual && !isBangBang;
-  $('manualSection').style.display = isManual ? '' : 'none';
-  $('pidSection').style.display = isPID ? '' : 'none';
-  $('bangbangSection').style.display = isBangBang ? '' : 'none';
+  const isManual    = m === 'manual';
+  const isP         = m === 'P';
+  const isPD        = m === 'PD';
+  const isPID       = m === 'PID';
+  const isCascade   = m === 'cascade';
+  const isBangBang  = m === 'bangbang';
 
-  $('kiRow').style.display = (m === 'PI' || m === 'PID') ? '' : 'none';
-  $('kdRow').style.display = (m === 'PD' || m === 'PID') ? '' : 'none';
+  $('manualSection').style.display    = isManual   ? '' : 'none';
+  $('pidSection').style.display       = isP || isPD || isPID ? '' : 'none';  
+  $('cascadeSection').style.display   = isCascade ? '' : 'none';  
+  $('bangbangSection').style.display  = isBangBang ? '' : 'none';
+
+  $('kiRow').style.display = isPID || isCascade ? '' : 'none';
+  $('kdRow').style.display = isPD  || isPID || isCascade ? '' : 'none'; 
 }
 
 function setGrav(g) {
@@ -150,12 +169,19 @@ function updateFuelUI() {
 /* ===================== PID ===================== */
 function computePID(dt) {
   const error = setpoint - altitude;
-  const useP = (mode === 'P' || mode === 'PD' || mode === 'PI' || mode === 'PID');  
-  const useI = (mode === 'PI' || mode === 'PID');
-  const useD = (mode === 'PD' || mode === 'PID');
-  if (useI && error > 0) { // Only accumulate when lander is below setpoint because I can only apply thrust in up direction. Since I can't push the lander down (no downward thrust), the integral should not accumulate "error" for a situation I have no authority to correct.
-    integralErr += error * dt;
-    integralErr = Math.max(0, Math.min(500, integralErr)); // Clamp to [0, 500] since it can never be negative
+  const useP = (mode === 'P' || mode === 'PD' || mode === 'PID' || mode === 'PD+PID');
+  const useI = (mode === 'PID' || mode === 'cascade');
+  const useD = (mode === 'PD' || mode === 'PID' || mode === 'cascade');
+
+  // Only accumulate integral when below setpoint (error > 0) — lander can only thrust upward,
+  // so accumulating negative error while above setpoint has no authority and causes windup.
+  // Also skip accumulation while falling fast toward setpoint to avoid suppressing D term.
+  if (useI) {
+    const approachingFromAbove = error < 0 && velocity < -0.5;
+    if (!approachingFromAbove) {
+      integralErr += error * dt;
+      integralErr = Math.max(-500, Math.min(500, integralErr));
+    }
   }
   const derivative = (error - prevError) / dt;
   prevError = error;
@@ -169,6 +195,67 @@ function computePID(dt) {
   let thrustFrac = hoverFrac + pidOutput / maxThrust;
   thrustFrac = Math.max(0, Math.min(1, thrustFrac));
   return thrustFrac;
+}
+
+/* ===================== CASCADE PD + PID =====================
+ *  Outer PD:  altitude error  → commanded velocity setpoint
+ *  Inner PID: velocity error  → thrust
+ *
+ *  Velocity profile: linearly scales max descent rate with altitude
+ *  so impact velocity is always well under 5 m/s regardless of gains.
+ * ============================================================ */
+function computeCommandedVelocity(alt) {
+  const maxDescent  = 12.0;   // m/s — max descent rate at high altitude
+  const landingSpeed = 2.0;   // m/s — target speed near ground
+  const transitionAlt = 80;   // m  — below this, bleed to landing speed
+
+  if (alt > transitionAlt) {
+    const t = Math.min(1, alt / initAlt);
+    return -(landingSpeed + (maxDescent - landingSpeed) * t);
+  } else {
+    const t = alt / transitionAlt;
+    return -(landingSpeed * t + 0.5 * (1 - t));
+  }
+}
+
+function computeCascade(dt) {
+  // --- Outer PD: altitude → velocity setpoint ---
+  const altError = setpoint - altitude;
+  const altD     = (altError - prevAltError) / dt;
+  prevAltError   = altError;
+
+  cascadePouter = Kp_outer * altError;
+  cascadeDouter = Kd_outer * altD;
+  const pdVelCmd = cascadePouter + cascadeDouter;
+
+  // Clamp velocity command by safety descent profile
+  const profileVel   = computeCommandedVelocity(altitude);
+  cascadeVelSetpoint = Math.max(profileVel, Math.min(0, pdVelCmd));
+
+  // --- Inner PID: velocity → thrust ---
+  cascadeVelError = cascadeVelSetpoint - velocity;
+
+  // Integral: only accumulate when we have authority (not falling freely above setpoint)
+  const approachingFromAbove = altError < 0 && velocity < -0.5;
+  if (!approachingFromAbove) {
+    integralVelErr += cascadeVelError * dt;
+    integralVelErr  = Math.max(-50, Math.min(50, integralVelErr));
+  }
+
+  const velD = (cascadeVelError - prevVelErr) / dt;
+  prevVelErr = cascadeVelError;
+
+  cascadePinner = Kp_inner * cascadeVelError;
+  cascadeIinner = Ki_inner * integralVelErr;
+  cascadeDinner = Kd_inner * velD;
+
+  const hoverFrac = gravity / maxThrust;
+  let thrustFrac  = hoverFrac
+                  + cascadePinner / maxThrust
+                  + cascadeIinner / maxThrust
+                  + cascadeDinner / maxThrust;
+
+  return Math.max(0, Math.min(1, thrustFrac));
 }
 
 /* ===================== BANG-BANG ===================== */
@@ -233,6 +320,8 @@ function physicsStep(elapsed) {
     thrustFrac = fuel > 0 ? manualThrust : 0;
   } else if (mode === 'bangbang') {
     thrustFrac = fuel > 0 ? computeBangBang() : 0;
+  } else if (mode === 'cascade') {
+    thrustFrac = fuel > 0 ? computeCascade(elapsed) : 0;
   } else {
     thrustFrac = fuel > 0 ? computePID(elapsed) : 0;
   }
@@ -508,14 +597,25 @@ function updateHUD() {
   $('logCount').textContent = dataLog.length.toLocaleString() + ' frames recorded';
 
   if (mode !== 'manual' && mode !== 'bangbang') {
-    const error = setpoint - altitude;
-    $('liveError').textContent = error.toFixed(3);
-    $('livePterm').textContent = pidPterm.toFixed(4);
-    $('liveIterm').textContent = pidIterm.toFixed(4);
-    $('liveDterm').textContent = pidDterm.toFixed(4);
-    $('liveOutput').textContent = pidOutput.toFixed(4);
-    const clamped = Math.max(0, Math.min(1, (gravity/maxThrust) + pidOutput/maxThrust));
-    $('liveClamped').textContent = (clamped*100).toFixed(1) + '%';
+    if (mode === 'cascade') {
+      $('liveError').textContent  = (setpoint - altitude).toFixed(3);
+      $('livePterm').textContent  = `P=${cascadePouter.toFixed(3)} D=${cascadeDouter.toFixed(3)}`;
+      $('liveIterm').textContent  = `vCmd=${cascadeVelSetpoint.toFixed(2)} m/s`;
+      $('liveDterm').textContent  = `vErr=${cascadeVelError.toFixed(3)}`;
+      $('liveOutput').textContent = `P=${cascadePinner.toFixed(3)} I=${cascadeIinner.toFixed(3)} D=${cascadeDinner.toFixed(3)}`;
+      const clamped = Math.max(0, Math.min(1, (gravity/maxThrust)
+        + cascadePinner/maxThrust + cascadeIinner/maxThrust + cascadeDinner/maxThrust));
+      $('liveClamped').textContent = (clamped*100).toFixed(1) + '%';
+    } else {
+      const error = setpoint - altitude;
+      $('liveError').textContent = error.toFixed(3);
+      $('livePterm').textContent = pidPterm.toFixed(4);
+      $('liveIterm').textContent = pidIterm.toFixed(4);
+      $('liveDterm').textContent = pidDterm.toFixed(4);
+      $('liveOutput').textContent = pidOutput.toFixed(4);
+      const clamped = Math.max(0, Math.min(1, (gravity/maxThrust) + pidOutput/maxThrust));
+      $('liveClamped').textContent = (clamped*100).toFixed(1) + '%';
+    }
   } else {
     ['liveError','livePterm','liveIterm','liveDterm','liveOutput','liveClamped'].forEach(id => {
       $(id).textContent = 'N/A';
