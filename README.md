@@ -10,7 +10,7 @@ Use **plotLander.py** to plot saved log files:
 <img width="388" height="287" alt="image" src="https://github.com/user-attachments/assets/8697a342-049d-49da-9fed-dd0cb3facda0" />
 
 TODO:
-* Add another control method: PD for outer altitude loop, PID for inner velocity loop. Start with speed setpoint of 20m/s and after transition altitude of 50m, reduce it to 2m/s. Similar to Apollo's three-phase approach.
+* Tune cascade (PD+PID) constants for better performance
 * Start from horizontal alignment with initial horizontal velocity:
 <img width="449" height="408" alt="image" src="https://github.com/user-attachments/assets/4f1f789d-6659-437d-9478-d6476c460f89" />
 
