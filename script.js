@@ -46,8 +46,13 @@ let mode = 'manual';
 let manualThrust = 0;
 
 // Cascade PD+PID gains
-let Kp_outer = 0.05, Kd_outer = 0.1;   // outer PD: altitude error → velocity setpoint
-let Kp_inner = 1.5,  Ki_inner = 0.3, Kd_inner = 0.5; // inner PID: velocity error → thrust
+// outer PD: altitude error → velocity setpoint
+let Kp_outer = 0.05;   // maps altitude error to velocity command
+let Kd_outer = 0.1;    // damps altitude oscillation
+// inner PID: velocity error → thrust
+let Kp_inner = 1.5;    // velocity tracking
+let Ki_inner = 0.3;    // eliminates velocity steady-state error
+let Kd_inner = 0.5;    // damps velocity oscillation
 
 // Cascade state
 let prevAltError = 0;
