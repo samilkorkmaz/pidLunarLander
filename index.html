@@ -224,45 +224,45 @@
       <div class="slider-row" id="kpRow_outer">
         <div class="slider-label">
           <span>Kp_outer</span>
-          <value id="kpVal_outer">0.05</value>
+          <value id="kpVal_outer">0.30</value>
         </div>
-        <input type="range" min="0" max="5" step="0.05" value="0.05" id="kpSlider_outer"
+        <input type="range" min="0" max="5" step="0.05" value="0.3" id="kpSlider_outer"
           oninput="Kp_outer=parseFloat(this.value);document.getElementById('kpVal_outer').textContent=Kp_outer.toFixed(2)">
       </div>
 
       <div class="slider-row" id="kdRow_outer">
         <div class="slider-label">
           <span>Kd_outer</span>
-          <value id="kdVal_outer">0.10</value>
+          <value id="kdVal_outer">0.50</value>
         </div>
-        <input type="range" min="0" max="5" step="0.05" value="0.1" id="kdSlider_outer"
+        <input type="range" min="0" max="5" step="0.05" value="0.5" id="kdSlider_outer"
           oninput="Kd_outer=parseFloat(this.value);document.getElementById('kdVal_outer').textContent=Kd_outer.toFixed(2)">
       </div>
 
       <div class="slider-row" id="kpRow_inner">
         <div class="slider-label">
           <span>Kp_inner</span>
-          <value id="kpVal_inner">1.50</value>
+          <value id="kpVal_inner">4.00</value>
         </div>
-        <input type="range" min="0" max="5" step="0.05" value="1.5" id="kpSlider_inner"
+        <input type="range" min="0" max="5" step="0.05" value="4.0" id="kpSlider_inner"
           oninput="Kp_inner=parseFloat(this.value);document.getElementById('kpVal_inner').textContent=Kp_inner.toFixed(2)">
       </div>
 
       <div class="slider-row" id="kiRow_inner">
         <div class="slider-label">
           <span>Ki_inner</span>
-          <value id="kiVal_inner">0.30</value>
+          <value id="kiVal_inner">0.50</value>
         </div>
-        <input type="range" class="green" min="0" max="1" step="0.005" value="0.3" id="kiSlider_inner"
+        <input type="range" class="green" min="0" max="1" step="0.005" value="0.5" id="kiSlider_inner"
           oninput="Ki_inner=parseFloat(this.value);document.getElementById('kiVal_inner').textContent=Ki_inner.toFixed(3)">
       </div>
 
       <div class="slider-row" id="kdRow_inner">
         <div class="slider-label">
           <span>Kd_inner</span>
-          <value id="kdVal_inner">0.50</value>
+          <value id="kdVal_inner">1.00</value>
         </div>
-        <input type="range" class="orange" min="0" max="10" step="0.1" value="0.5" id="kdSlider_inner"
+        <input type="range" class="orange" min="0" max="10" step="0.1" value="1.0" id="kdSlider_inner"
           oninput="Kd_inner=parseFloat(this.value);document.getElementById('kdVal_inner').textContent=Kd_inner.toFixed(2)">
       </div>
     </div>

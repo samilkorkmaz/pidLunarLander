@@ -46,13 +46,17 @@ let mode = 'manual';
 let manualThrust = 0;
 
 // Cascade PD+PID gains
+// Outer PD: Kp_outer large enough to command velocity ≥ safety profile during descent.
+// At alt=500, altError=-100 → pdVelCmd = 0.3×(-100) = -30 m/s, profile allows ~28 → profile wins.
+// During braking approach altError shrinks, PD smoothly hands off control.
+// Inner PID: Kp_inner >> Kp_outer to ensure inner loop is 10× faster than outer.
 // outer PD: altitude error → velocity setpoint
-let Kp_outer = 0.05;   // maps altitude error to velocity command
-let Kd_outer = 0.1;    // damps altitude oscillation
+let Kp_outer = 0.30;   // maps altitude error to velocity command
+let Kd_outer = 0.50;    // damps altitude oscillation
 // inner PID: velocity error → thrust
-let Kp_inner = 1.5;    // velocity tracking
-let Ki_inner = 0.3;    // eliminates velocity steady-state error
-let Kd_inner = 0.5;    // damps velocity oscillation
+let Kp_inner = 4.0;    // velocity tracking
+let Ki_inner = 0.5;    // eliminates velocity steady-state error
+let Kd_inner = 1.0;    // damps velocity oscillation
 
 // Cascade state
 let prevAltError = 0;
@@ -210,16 +214,22 @@ function computePID(dt) {
  *  so impact velocity is always well under 5 m/s regardless of gains.
  * ============================================================ */
 function computeCommandedVelocity(alt) {
-  const maxDescent  = 12.0;   // m/s — max descent rate at high altitude
-  const landingSpeed = 2.0;   // m/s — target speed near ground
-  const transitionAlt = 80;   // m  — below this, bleed to landing speed
-
+  // Physics limit: stopping from v m/s needs d = (v²- v_aim²) / (2 * netBrakeAccel)
+  // netBrakeAccel = maxThrust - gravity = 3.5 - 1.62 = 1.88 m/s²
+  // From 400m: max safe speed = sqrt(2 * 1.88 * 390 + 3.5²) ≈ 38 m/s → use 28 m/s with margin
+  const netBrakeAccel = Math.max(0.1, maxThrust - gravity);
+  const landingSpeed  = 3.0;    // m/s — well under 5 m/s limit
+  const transitionAlt = 60;     // m  — below this, bleed to landing speed
+ 
   if (alt > transitionAlt) {
-    const t = Math.min(1, alt / initAlt);
-    return -(landingSpeed + (maxDescent - landingSpeed) * t);
+    // Max speed physically stoppable from this altitude with 20% safety margin
+    const stoppingDist = alt - transitionAlt;
+    const maxSafeSpeed = Math.sqrt(2 * netBrakeAccel * stoppingDist * 0.8 + landingSpeed * landingSpeed);
+    return -Math.min(maxSafeSpeed, 28.0);  // cap at 28 m/s absolute maximum
   } else {
+    // Linear bleed: from landingSpeed at transitionAlt down to 0.5 m/s at ground
     const t = alt / transitionAlt;
-    return -(landingSpeed * t + 0.5 * (1 - t));
+    return -(0.5 + (landingSpeed - 0.5) * t);
   }
 }
 
@@ -604,7 +614,7 @@ function updateHUD() {
   if (mode !== 'manual' && mode !== 'bangbang') {
     if (mode === 'cascade') {
       $('liveError').textContent  = (setpoint - altitude).toFixed(3);
-      $('livePterm').textContent  = `P=${cascadePouter.toFixed(3)} D=${cascadeDouter.toFixed(3)}`;
+      $('livePterm').textContent  = `P=${cascadePouter.toFixed(1)} D=${cascadeDouter.toFixed(1)}`;
       $('liveIterm').textContent  = `vCmd=${cascadeVelSetpoint.toFixed(2)} m/s`;
       $('liveDterm').textContent  = `vErr=${cascadeVelError.toFixed(3)}`;
       $('liveOutput').textContent = `P=${cascadePinner.toFixed(3)} I=${cascadeIinner.toFixed(3)} D=${cascadeDinner.toFixed(3)}`;
