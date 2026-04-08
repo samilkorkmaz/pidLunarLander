@@ -216,7 +216,7 @@ function computePID(dt) {
 function computeCommandedVelocity(alt) {
   // Physics limit: stopping from v m/s needs d = (v²- v_aim²) / (2 * netBrakeAccel)
   // netBrakeAccel = maxThrust - gravity = 3.5 - 1.62 = 1.88 m/s²
-  // From 400m: max safe speed = sqrt(2 * 1.88 * 390 + 3.5²) ≈ 38 m/s → use 28 m/s with margin
+  // From 400m: max safe speed = sqrt(2 * 1.88 * 390 + 3.5²) ≈ 38 m/s → use 35 m/s with margin
   const netBrakeAccel = Math.max(0.1, maxThrust - gravity);
   const landingSpeed  = 3.0;    // m/s — well under 5 m/s limit
   const transitionAlt = 60;     // m  — below this, bleed to landing speed
@@ -225,7 +225,7 @@ function computeCommandedVelocity(alt) {
     // Max speed physically stoppable from this altitude with 20% safety margin
     const stoppingDist = alt - transitionAlt;
     const maxSafeSpeed = Math.sqrt(2 * netBrakeAccel * stoppingDist * 0.8 + landingSpeed * landingSpeed);
-    return -Math.min(maxSafeSpeed, 28.0);  // cap at 28 m/s absolute maximum
+    return -Math.min(maxSafeSpeed, 35.0);  // cap at 35 m/s absolute maximum
   } else {
     // Linear bleed: from landingSpeed at transitionAlt down to 0.5 m/s at ground
     const t = alt / transitionAlt;
