@@ -11,6 +11,7 @@ Use **plotLander.py** to plot saved log files:
 
 TODO:
 * Cascade: Reduce thrust to hover if lander is close to target and velocity > -5
+* Add maxThrust as input to Thrust Dynamics panel.
 * Initial values for inputs should be read from UI instead of waiting for a UI event to update them.
 * Start from horizontal alignment with initial horizontal velocity:
 <img width="449" height="408" alt="image" src="https://github.com/user-attachments/assets/4f1f789d-6659-437d-9478-d6476c460f89" />
