@@ -10,6 +10,7 @@ Use **plotLander.py** to plot saved log files:
 <img width="388" height="287" alt="image" src="https://github.com/user-attachments/assets/8697a342-049d-49da-9fed-dd0cb3facda0" />
 
 TODO:
+* Cascade: Reduce thrust to hover if lander is close to target and velocity > -5
 * Initial values for inputs should be read from UI instead of waiting for a UI event to update them.
 * Start from horizontal alignment with initial horizontal velocity:
 <img width="449" height="408" alt="image" src="https://github.com/user-attachments/assets/4f1f789d-6659-437d-9478-d6476c460f89" />
