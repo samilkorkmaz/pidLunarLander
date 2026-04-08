@@ -32,9 +32,9 @@ const $ = (id) => document.getElementById(id);
   resize();
 })();
 
-
-
 /* ===================== SIM STATE ===================== */
+const safeSpeed = 5.0; // m/s — max safe landing speed
+const landingAltitude = 4.0; // m — altitude of landing pad
 let gravity = 1.62;
 let maxThrust = 3.5;
 let initAlt = 500;
@@ -270,13 +270,22 @@ function computeCascade(dt) {
                   + cascadeIinner / maxThrust
                   + cascadeDinner / maxThrust;
 
-  return Math.max(0, Math.min(1, thrustFrac));
+  thrustFrac = Math.max(0, Math.min(1, thrustFrac));
+  // Hover clamp: within 40 m of setpoint and slow approach, cap at hover thrust
+  // This prevents overshoot and unnecessary thrust oscillation near the target.
+  const nearSetpoint = Math.abs(altError) <= 40;
+  const slowSpeed    = Math.abs(velocity) < 5;
+  if (nearSetpoint && slowSpeed) {
+    thrustFrac = Math.min(thrustFrac, 0.9*hoverFrac);
+  }
+
+  return thrustFrac;
 }
 
 /* ===================== BANG-BANG ===================== */
-const BB_TARGET_ALT  = 5;
-const BB_MAX_IMPACT  = 5;
-const BB_AIM_IMPACT  = 3.5;
+const BB_TARGET_ALT  = landingAltitude + 1; // m — start braking 1m above landing pad
+const BB_MAX_IMPACT  = safeSpeed;
+const BB_AIM_IMPACT  = safeSpeed * 0.8; // m/s — aim for 20% under max safe impact speed to give margin for disturbances
 const BB_SAFETY_M    = 2.0;
 
 function computeBangBang() {
@@ -577,7 +586,7 @@ function updateCharts() {
 /* ===================== HUD ===================== */
 function updateHUD() {
   const velAbs = Math.abs(velocity);
-  const velClass = velAbs < 5 ? 'ok' : velAbs < 15 ? 'warn' : 'danger';
+  const velClass = velAbs < safeSpeed ? 'ok' : velAbs < 15 ? 'warn' : 'danger';
   const altClass = altitude > 50 ? 'ok' : altitude > 10 ? 'warn' : 'danger';
   const fuelClass = fuel > 0.5 ? 'ok' : fuel > 0.2 ? 'warn' : 'danger';
 
@@ -691,7 +700,7 @@ function mainLoop(ts) {
 
   if (running && !landed && !crashed) {
     if (altitude < 10) {
-      const subSteps = 5;
+      const subSteps = 5; // increase physics update rate near the ground to reduce tunneling
       const subDt = elapsed / subSteps;
       for (let i = 0; i < subSteps; i++) {
         physicsStep(subDt);
@@ -719,12 +728,12 @@ function mainLoop(ts) {
       (fuel * 100).toFixed(2)
     ]);
 
-    if (altitude <= 4) {
-      altitude = 4;
+    if (altitude <= landingAltitude) {
+      altitude = landingAltitude;
       const impactSpeed = Math.abs(velocity);
       velocity = 0;
       running = false;
-      if (impactSpeed <= 5) {
+      if (impactSpeed <= safeSpeed) {
         landed = true;
         showOverlay(true, impactSpeed);
         showFlash('flash');
